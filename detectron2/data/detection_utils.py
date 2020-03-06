@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
@@ -161,10 +162,20 @@ def transform_instance_annotations(
             transformed according to `transforms`.
             The "bbox_mode" field will be set to XYXY_ABS.
     """
-    bbox = BoxMode.convert(annotation["bbox"], annotation["bbox_mode"], BoxMode.XYXY_ABS)
+
+
+
+    # bbox = BoxMode.convert(annotation["bbox"], annotation["bbox_mode"], BoxMode.XYXY_ABS) # 원본
+    bbox = BoxMode.convert(annotation["bbox"], annotation["bbox_mode"], BoxMode.XYWHA_ABS) if annotation["bbox_mode"] is BoxMode.XYWHA_ABS else BoxMode.convert(annotation["bbox"], annotation["bbox_mode"], BoxMode.XYXY_ABS) # 수정
     # Note that bbox is 1d (per-instance bounding box)
-    annotation["bbox"] = transforms.apply_box([bbox])[0]
-    annotation["bbox_mode"] = BoxMode.XYXY_ABS
+    annotation["bbox_mode"] = BoxMode.XYXY_ABS if annotation["bbox_mode"] is not BoxMode.XYWHA_ABS else BoxMode.XYWHA_ABS
+    if annotation["bbox_mode"] == BoxMode.XYWHA_ABS:
+        # bbox_H = bbox[:4]
+        # bbox_H = transforms.apply_box([bbox_H])[0]
+        # annotation["bbox"] = np.append(bbox_H,bbox[4])
+        annotation["bbox"] = bbox
+    else:
+        annotation["bbox"] = transforms.apply_box([bbox])[0]
 
     if "segmentation" in annotation:
         # each instance contains 1 or more polygons
