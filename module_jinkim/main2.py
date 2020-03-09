@@ -125,7 +125,7 @@ def get_ADDxywht_dicts(dataset_dir,val_or_train):
 ########### dataset setting part ###########
 from detectron2.data import DatasetCatalog, MetadataCatalog
 
-dataset_dir = '/home/genie/hddu/dataset_ADD_20191122/train/'
+dataset_dir = os.path.expanduser('~/ADD_dataset/train/') # symbolik link를 유저 path 바로 밑에 설치.(ex :sudo ln -sT ~/hddu/dataset_ADD_20191122/ ~/ADD_dataset)
 origin_ADD_csv = os.path.join(dataset_dir,'labels.csv')
 train_csv_path = os.path.join(dataset_dir,'ADD_train.csv')
 val_csv_path = os.path.join(dataset_dir,'ADD_val.csv')
