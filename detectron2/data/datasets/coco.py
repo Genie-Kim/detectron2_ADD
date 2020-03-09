@@ -11,7 +11,7 @@ from fvcore.common.file_io import PathManager, file_lock
 from fvcore.common.timer import Timer
 from PIL import Image
 
-from detectron2.structures import Boxes, BoxMode, PolygonMasks
+from detectron2.structures import Boxes, BoxMode, PolygonMasks, RotatedBoxes
 
 from .. import DatasetCatalog, MetadataCatalog
 
@@ -325,7 +325,8 @@ def convert_to_coco_dict(dataset_name):
             # COCO requirement: XYWH box format
             bbox = annotation["bbox"]
             bbox_mode = annotation["bbox_mode"]
-            bbox = BoxMode.convert(bbox, bbox_mode, BoxMode.XYWH_ABS)
+            # bbox = BoxMode.convert(bbox, bbox_mode, BoxMode.XYWH_ABS) # 원본
+            bbox = bbox if bbox_mode is BoxMode.XYWHA_ABS else BoxMode.convert(bbox, bbox_mode, BoxMode.XYWH_ABS) # 수정
 
             # COCO requirement: instance area
             if "segmentation" in annotation:
@@ -341,8 +342,10 @@ def convert_to_coco_dict(dataset_name):
                     raise TypeError(f"Unknown segmentation type {type(segmentation)}!")
             else:
                 # Computing areas using bounding boxes
-                bbox_xy = BoxMode.convert(bbox, BoxMode.XYWH_ABS, BoxMode.XYXY_ABS)
-                area = Boxes([bbox_xy]).area()[0].item()
+                # bbox_xy = BoxMode.convert(bbox, BoxMode.XYWH_ABS, BoxMode.XYXY_ABS) # 원본
+                bbox_xy = bbox if bbox_mode is BoxMode.XYWHA_ABS else BoxMode.convert(bbox, BoxMode.XYWH_ABS,BoxMode.XYXY_ABS)  # 수정
+                # area = Boxes([bbox_xy]).area()[0].item() # 원본
+                area = RotatedBoxes([bbox_xy]).area()[0].item() if bbox_mode is BoxMode.XYWHA_ABS else Boxes([bbox_xy]).area()[0].item()
 
             if "keypoints" in annotation:
                 keypoints = annotation["keypoints"]  # list[int]
