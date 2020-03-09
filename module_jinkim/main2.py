@@ -167,18 +167,18 @@ cfg = get_cfg()
 cfg.OUTPUT_DIR = './module_jinkim/output'
 cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml") # Let training initialize from model zoo
-# cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth") # evaluation
+# cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth") # Resume
 cfg.DATASETS.TRAIN = (['ADDxywht_train'])
 cfg.DATASETS.TEST = (['ADDxywht_val'])
 
-cfg.TEST.EVAL_PERIOD = 4000
+cfg.TEST.EVAL_PERIOD = 1000
 
 cfg.DATALOADER.NUM_WORKERS = 4
 
 cfg.SOLVER.IMS_PER_BATCH = 4
-cfg.SOLVER.CHECKPOINT_PERIOD = 4000
+cfg.SOLVER.CHECKPOINT_PERIOD = 1000
 # cfg.SOLVER.BASE_LR = 0.0005  # pick a good LR
-cfg.SOLVER.MAX_ITER = 140000   # 300 iterations seems good enough for this toy dataset; you may need to train longer for a practical dataset
+cfg.SOLVER.MAX_ITER = 10000   # 300 iterations seems good enough for this toy dataset; you may need to train longer for a practical dataset
 # cfg.SOLVER.IMS_PER_BATCH = 16
 
 cfg.MODEL.MASK_ON=False
