@@ -54,5 +54,7 @@ source ~/.zshrc
 detectron2
 # Now enter inside the docker container
 # Current Work dir is /data/ADD
+
+rm -rf build/ **/*.so
 python3 -m pip install -e .
 ```
