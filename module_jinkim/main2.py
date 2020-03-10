@@ -9,9 +9,10 @@ from detectron2.data import transforms as T
 from detectron2.data import detection_utils as utils
 from detectron2.data import DatasetCatalog, MetadataCatalog, build_detection_test_loader,build_detection_train_loader
 from detectron2.engine import DefaultTrainer, default_argument_parser, default_setup, hooks, launch
-import os,torch, copy, random, cv2, math
+import os,torch, copy, random, cv2, math, pdb
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 from detectron2.structures import (
     BitMasks,
     Boxes,
@@ -173,7 +174,7 @@ cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_X_1
 cfg.DATASETS.TRAIN = (['ADDxywht_train'])
 cfg.DATASETS.TEST = (['ADDxywht_val'])
 
-cfg.TEST.EVAL_PERIOD = 330
+cfg.TEST.EVAL_PERIOD = 50
 
 cfg.DATALOADER.NUM_WORKERS = 4
 
@@ -224,9 +225,11 @@ def mapper(dataset_dict):
 class MyTrainer(DefaultTrainer):
   @classmethod
   def build_evaluator(cls, cfg, dataset_name):
+      pdb.set_trace()
       output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
       evaluators = [RotatedCOCOEvaluator(dataset_name, cfg, True, output_folder)]
       return DatasetEvaluators(evaluators)
+      
   @classmethod
   def build_train_loader(cls, cfg):
         return build_detection_train_loader(cfg,mapper=mapper)

@@ -8,7 +8,6 @@ in training / testing. They will not work for everyone, but many users may find 
 The behavior of functions/classes in this file is subject to change,
 since they are meant to represent the "common default behavior" people need in their projects.
 """
-
 import argparse
 import logging
 import os
