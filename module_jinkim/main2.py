@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- 
+
 from detectron2.engine import DefaultTrainer
 from detectron2.config import get_cfg
 from detectron2.modeling import build_model
