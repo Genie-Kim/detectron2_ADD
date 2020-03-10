@@ -166,6 +166,7 @@ ADDxywht_metadata = MetadataCatalog.get("ADDxywht_train")
 ########### config file setting ###########
 ClassCount = 4
 input_image_scale=3000
+image_resize = 1300 # 이 코드에서 인풋이미지의 사이즈는 이것으로 결정된다. 
 cfg = get_cfg()
 cfg.OUTPUT_DIR = './module_jinkim/output'
 cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml"))
@@ -174,22 +175,22 @@ cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_X_1
 cfg.DATASETS.TRAIN = (['ADDxywht_train'])
 cfg.DATASETS.TEST = (['ADDxywht_val'])
 # Maximum size of the side of the image during training
-cfg.INPUT.MAX_SIZE_TRAIN = 1600
+cfg.INPUT.MAX_SIZE_TRAIN =image_resize 
 # Size of the smallest side of the image during training
-cfg.INPUT.MIN_SIZE_TRAIN = (1600,)
+cfg.INPUT.MIN_SIZE_TRAIN = (1000,1100,1200,1300,image_resize )
 # Size of the smallest side of the image during testing. Set to zero to disable resize in testing.
-cfg.INPUT.MIN_SIZE_TEST = 1600
+cfg.INPUT.MIN_SIZE_TEST = image_resize
 # Maximum size of the side of the image during testing
-cfg.INPUT.MAX_SIZE_TEST = 1600
-image_resize = 1500 # 이 코드에서 인풋이미지의 사이즈는 이것으로 결정된다. 
+cfg.INPUT.MAX_SIZE_TEST = image_resize 
+
 cfg.DATALOADER.NUM_WORKERS = 4
 
 cfg.TEST.EVAL_PERIOD = 650 
 
 cfg.SOLVER.CHECKPOINT_PERIOD = 650
 cfg.SOLVER.IMS_PER_BATCH = 2
-cfg.SOLVER.BASE_LR = 0.01  # pick a good LR
-cfg.SOLVER.MAX_ITER = 90000   # 300 iterations seems good enough for this toy dataset; you may need to train longer for a practical dataset
+cfg.SOLVER.BASE_LR = 0.008  # pick a good LR
+cfg.SOLVER.MAX_ITER = 85000   # 300 iterations seems good enough for this toy dataset; you may need to train longer for a practical dataset
 
 cfg.MODEL.MASK_ON=False
 cfg.MODEL.ROI_HEADS.NAME = "RROIHeads"
@@ -219,7 +220,7 @@ def my_transform_instance_annotations(annotation, transforms, image_size, *, key
 def mapper(dataset_dict):
   dataset_dict = copy.deepcopy(dataset_dict)  # it will be modified by code below
   image = utils.read_image(dataset_dict["file_name"], format="BGR")
-  image, transforms = T.apply_transform_gens([T.Resize((image_resize ,image_resize ))], image)
+  image, transforms = T.apply_transform_gens([T.Resize((image_resize ,image_resize))], image)
   dataset_dict["image"] = torch.as_tensor(image.transpose(2, 0, 1).astype("float32"))
   annos = [
       my_transform_instance_annotations(obj, transforms, image.shape[:2])  
