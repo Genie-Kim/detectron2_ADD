@@ -165,21 +165,20 @@ ClassCount = 4
 input_image_scale=3000
 cfg = get_cfg()
 cfg.OUTPUT_DIR = './module_jinkim/output'
-cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
-cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml") # Let training initialize from model zoo
+cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml"))
+cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml") # Let training initialize from model zoo
 # cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth") # Resume
 cfg.DATASETS.TRAIN = (['ADDxywht_train'])
 cfg.DATASETS.TEST = (['ADDxywht_val'])
 
-cfg.TEST.EVAL_PERIOD = 1000
+cfg.TEST.EVAL_PERIOD = 330
 
 cfg.DATALOADER.NUM_WORKERS = 4
 
-cfg.SOLVER.IMS_PER_BATCH = 4
-cfg.SOLVER.CHECKPOINT_PERIOD = 1000
-# cfg.SOLVER.BASE_LR = 0.0005  # pick a good LR
-cfg.SOLVER.MAX_ITER = 10000   # 300 iterations seems good enough for this toy dataset; you may need to train longer for a practical dataset
-# cfg.SOLVER.IMS_PER_BATCH = 16
+cfg.SOLVER.IMS_PER_BATCH = 4 
+cfg.SOLVER.CHECKPOINT_PERIOD = 330
+cfg.SOLVER.BASE_LR = 0.001  # pick a good LR
+cfg.SOLVER.MAX_ITER = 43000   # 300 iterations seems good enough for this toy dataset; you may need to train longer for a practical dataset
 
 cfg.MODEL.MASK_ON=False
 cfg.MODEL.ROI_HEADS.NAME = "RROIHeads"
@@ -191,8 +190,8 @@ cfg.MODEL.RPN.HEAD_NAME = "StandardRPNHead"
 cfg.MODEL.RPN.BBOX_REG_WEIGHTS = (1,1,1,1,1)
 cfg.MODEL.ANCHOR_GENERATOR.NAME = "RotatedAnchorGenerator"
 cfg.MODEL.ANCHOR_GENERATOR.ANGLES = [[0,30,60,90]]
-cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.5, 1.0, 2.0]] # 원본
-cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.1923,0.25,0.3,3.0,4.0,52]] # 수정
+#cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.5, 1.0, 2.0]] # 원본
+cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.2,0.2857,0.5,2.0,3.5,5]] # 수정
 
 cfg.MODEL.ROI_BOX_HEAD.POOLER_TYPE = "ROIAlignRotated"
 cfg.MODEL.ROI_BOX_HEAD.BBOX_REG_WEIGHTS = (10.0, 10.0, 5.0, 5.0, 10.0)
