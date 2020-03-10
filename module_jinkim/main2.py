@@ -173,15 +173,23 @@ cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_X_1
 # cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth") # Resume
 cfg.DATASETS.TRAIN = (['ADDxywht_train'])
 cfg.DATASETS.TEST = (['ADDxywht_val'])
-
-cfg.TEST.EVAL_PERIOD = 50
-
+# Maximum size of the side of the image during training
+cfg.INPUT.MAX_SIZE_TRAIN = 1600
+# Size of the smallest side of the image during training
+cfg.INPUT.MIN_SIZE_TRAIN = (1600,)
+# Size of the smallest side of the image during testing. Set to zero to disable resize in testing.
+cfg.INPUT.MIN_SIZE_TEST = 1600
+# Maximum size of the side of the image during testing
+cfg.INPUT.MAX_SIZE_TEST = 1600
+image_resize = 1500 # 이 코드에서 인풋이미지의 사이즈는 이것으로 결정된다. 
 cfg.DATALOADER.NUM_WORKERS = 4
 
-cfg.SOLVER.IMS_PER_BATCH = 4 
-cfg.SOLVER.CHECKPOINT_PERIOD = 330
-cfg.SOLVER.BASE_LR = 0.001  # pick a good LR
-cfg.SOLVER.MAX_ITER = 43000   # 300 iterations seems good enough for this toy dataset; you may need to train longer for a practical dataset
+cfg.TEST.EVAL_PERIOD = 650 
+
+cfg.SOLVER.CHECKPOINT_PERIOD = 650
+cfg.SOLVER.IMS_PER_BATCH = 2
+cfg.SOLVER.BASE_LR = 0.01  # pick a good LR
+cfg.SOLVER.MAX_ITER = 90000   # 300 iterations seems good enough for this toy dataset; you may need to train longer for a practical dataset
 
 cfg.MODEL.MASK_ON=False
 cfg.MODEL.ROI_HEADS.NAME = "RROIHeads"
@@ -211,7 +219,7 @@ def my_transform_instance_annotations(annotation, transforms, image_size, *, key
 def mapper(dataset_dict):
   dataset_dict = copy.deepcopy(dataset_dict)  # it will be modified by code below
   image = utils.read_image(dataset_dict["file_name"], format="BGR")
-  image, transforms = T.apply_transform_gens([T.Resize((800, 800))], image)
+  image, transforms = T.apply_transform_gens([T.Resize((image_resize ,image_resize ))], image)
   dataset_dict["image"] = torch.as_tensor(image.transpose(2, 0, 1).astype("float32"))
   annos = [
       my_transform_instance_annotations(obj, transforms, image.shape[:2])  
@@ -225,7 +233,6 @@ def mapper(dataset_dict):
 class MyTrainer(DefaultTrainer):
   @classmethod
   def build_evaluator(cls, cfg, dataset_name):
-      pdb.set_trace()
       output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
       evaluators = [RotatedCOCOEvaluator(dataset_name, cfg, True, output_folder)]
       return DatasetEvaluators(evaluators)
