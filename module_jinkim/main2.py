@@ -166,7 +166,7 @@ ADDxywht_metadata = MetadataCatalog.get("ADDxywht_train")
 ########### config file setting ###########
 ClassCount = 4
 input_image_scale=3000
-image_resize = 1300 # 이 코드에서 인풋이미지의 사이즈는 이것으로 결정된다. 
+image_resize = 1250 # 이 코드에서 인풋이미지의 사이즈는 이것으로 결정된다. 
 cfg = get_cfg()
 cfg.OUTPUT_DIR = './module_jinkim/output'
 cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml"))
@@ -177,7 +177,7 @@ cfg.DATASETS.TEST = (['ADDxywht_val'])
 # Maximum size of the side of the image during training
 cfg.INPUT.MAX_SIZE_TRAIN =image_resize 
 # Size of the smallest side of the image during training
-cfg.INPUT.MIN_SIZE_TRAIN = (1000,1100,1200,1300,image_resize )
+cfg.INPUT.MIN_SIZE_TRAIN = (1000,1100,1200,image_resize )
 # Size of the smallest side of the image during testing. Set to zero to disable resize in testing.
 cfg.INPUT.MIN_SIZE_TEST = image_resize
 # Maximum size of the side of the image during testing
