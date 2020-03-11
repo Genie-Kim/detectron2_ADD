@@ -7,10 +7,30 @@ from PIL import Image
 
 from detectron2.data import detection_utils as utils
 from detectron2.data import transforms as T
+from detectron2.structures import BoxMode
 
 """
-This file contains the mapping that's applied to "ADDxywht_train".
+This file contains the mapping that's applied to "ADDxywht_train/val".
 """
+
+def my_transform_instance_annotations(annotation, transforms, image_size, *, keypoint_hflip_indices=None):
+    annotation["bbox"] = transforms.apply_rotated_box(np.asarray([annotation['bbox']]))[0]
+    annotation["bbox_mode"] = BoxMode.XYWHA_ABS
+    return annotation
+## instant mapper(just resizing)
+# def mapper(dataset_dict):
+#   dataset_dict = copy.deepcopy(dataset_dict)  # it will be modified by code below
+#   image = utils.read_image(dataset_dict["file_name"], format="BGR")
+#   image, transforms = T.apply_transform_gens([T.Resize((max_image_resize ,max_image_resize))], image)
+#   dataset_dict["image"] = torch.as_tensor(image.transpose(2, 0, 1).astype("float32"))
+#   annos = [
+#       my_transform_instance_annotations(obj, transforms, image.shape[:2])
+#       for obj in dataset_dict.pop("annotations")
+#       if obj.get("iscrowd", 0) == 0
+#   ]
+#   instances = utils.annotations_to_instances_rotated(annos, image.shape[:2])
+#   dataset_dict["instances"] = utils.filter_empty_instances(instances)
+#   return dataset_dict
 
 class ADDDatasetMapper:
     """
@@ -18,7 +38,9 @@ class ADDDatasetMapper:
     and map it into a format used by the model.
 
     This is the default callable to be used to map your dataset dict into training data.
-    You may need to follow it to implement your own one for customized logic.
+    You may need to follow it to implement your own one for customized logic,
+    such as a different way to read or transform images.
+    See :doc:`/tutorials/data_loading` for details.
 
     The callable currently does the following:
 
@@ -94,10 +116,7 @@ class ADDDatasetMapper:
         # Pytorch's dataloader is efficient on torch.Tensor due to shared-memory,
         # but not efficient on large generic data structures due to the use of pickle & mp.Queue.
         # Therefore it's important to use torch.Tensor.
-        dataset_dict["image"] = torch.as_tensor(
-            image.transpose(2, 0, 1).astype("float32")
-        ).contiguous()
-        # Can use uint8 if it turns out to be slow some day
+        dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose(2, 0, 1)))
 
         # USER: Remove if you don't use pre-computed proposals.
         if self.load_proposals:
@@ -106,6 +125,7 @@ class ADDDatasetMapper:
             )
 
         if not self.is_train:
+            # USER: Modify this if you want to keep them for some reason.
             dataset_dict.pop("annotations", None)
             dataset_dict.pop("sem_seg_file_name", None)
             return dataset_dict
@@ -120,13 +140,11 @@ class ADDDatasetMapper:
 
             # USER: Implement additional transformations if you have other types of data
             annos = [
-                utils.transform_instance_annotations(
-                    obj, transforms, image_shape, keypoint_hflip_indices=self.keypoint_hflip_indices
-                )
+                my_transform_instance_annotations(obj, transforms, image.shape[:2])
                 for obj in dataset_dict.pop("annotations")
                 if obj.get("iscrowd", 0) == 0
             ]
-            instances = utils.annotations_to_instances_rotated(annos, image_shape)
+            instances = utils.annotations_to_instances_rotated(annos, image.shape[:2])
             # Create a tight bounding box from masks, useful when image is cropped
             if self.crop_gen and instances.has("gt_masks"):
                 instances.gt_boxes = instances.gt_masks.get_bounding_boxes()

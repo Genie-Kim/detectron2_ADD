@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 
 from detectron2.engine import DefaultTrainer
 from detectron2.config import get_cfg
@@ -7,9 +7,9 @@ from detectron2.evaluation import inference_on_dataset, RotatedCOCOEvaluator, Da
 from detectron2 import model_zoo
 from detectron2.data import transforms as T
 from detectron2.data import detection_utils as utils
-from detectron2.data import DatasetCatalog, MetadataCatalog, build_detection_test_loader,build_detection_train_loader
+from detectron2.data import DatasetCatalog, MetadataCatalog, build_detection_test_loader, build_detection_train_loader
 from detectron2.engine import DefaultTrainer, default_argument_parser, default_setup, hooks, launch
-import os,torch, copy, random, cv2, math, pdb
+import os, torch, copy, random, cv2, math, pdb
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -23,6 +23,8 @@ from detectron2.structures import (
     RotatedBoxes,
     polygons_to_bitmask,
 )
+from module_jinkim import ADDDatasetMapper
+
 
 def backward_convert(coordinate, with_label=False):
     """
@@ -51,7 +53,8 @@ def backward_convert(coordinate, with_label=False):
 
     return np.array(boxes, dtype=np.float32)
 
-def seperate_train_val(train_val_ratio,origin_ADD_csv,train_csv_path,val_csv_path):
+
+def seperate_train_val(train_val_ratio, origin_ADD_csv, train_csv_path, val_csv_path):
     # 원본 ADD csv 파일을 trining set annotation csv와 validation set annotation csv로 나눠서 저장한다.
     df = pd.read_csv(origin_ADD_csv)
     img_names = (df.groupby('file_name').count()).reset_index()['file_name']
@@ -64,22 +67,21 @@ def seperate_train_val(train_val_ratio,origin_ADD_csv,train_csv_path,val_csv_pat
         data_per_img = df[df['file_name'] == img_name]
         k = random.uniform(0, 1)  # 0에서 1사이
         if k < train_val_ratio:
-            val_df = val_df.append(data_per_img,ignore_index=True)
+            val_df = val_df.append(data_per_img, ignore_index=True)
         else:
             train_df = train_df.append(data_per_img, ignore_index=True)
     val_df.to_csv(val_csv_path, mode='w', index=False)
     train_df.to_csv(train_csv_path, mode='w', index=False)
 
 
-
-def get_ADDxywht_dicts(dataset_dir,val_or_train):
-    csv_file = os.path.join(dataset_dir,"ADD_"+ val_or_train + ".csv")
+def get_ADDxywht_dicts(dataset_dir, val_or_train):
+    csv_file = os.path.join(dataset_dir, "ADD_" + val_or_train + ".csv")
     img_dir = os.path.join(dataset_dir, 'images')
     df = pd.read_csv(csv_file)
     image_shape = input_image_scale
 
     # XYWHA 데이터 생성하기
-    xywha = backward_convert(df.loc[:,'point1_x':'point4_y'].values)
+    xywha = backward_convert(df.loc[:, 'point1_x':'point4_y'].values)
     sub_df = pd.DataFrame(data=xywha, columns=np.array(['center_x', 'center_y', 'width', 'height', 'angle']))
     df = df.join(sub_df)
     df['angle'] = -1 * df['angle']  # cv2의 minarearect랑 표현 방식이 다르다. detectron2는 ccw라고 함. 근데 -1을 곱해야 맞음
@@ -91,16 +93,16 @@ def get_ADDxywht_dicts(dataset_dir,val_or_train):
     #
     # df = df[cond1 & cond2 & cond3 & cond4]
 
-    df = (df.reset_index()).drop(columns='index') # annotation이 몇개 빠지기 때문에 reset index 해준다.
+    df = (df.reset_index()).drop(columns='index')  # annotation이 몇개 빠지기 때문에 reset index 해준다.
 
     file_name_dict = {}
     for i in range(df.shape[0]):
-        filename = os.path.join(img_dir, df.loc[i,'file_name'])
+        filename = os.path.join(img_dir, df.loc[i, 'file_name'])
         # height, width = cv2.imread(filename).shape[:2]
         height = image_shape
         width = image_shape
         if filename not in file_name_dict:
-            file_name_dict[filename] = dict.fromkeys(["image_id", "height", "width","annotations"])
+            file_name_dict[filename] = dict.fromkeys(["image_id", "height", "width", "annotations"])
             image_id = len(file_name_dict)
             file_name_dict[filename]["image_id"] = image_id
             file_name_dict[filename]["height"] = height
@@ -110,10 +112,11 @@ def get_ADDxywht_dicts(dataset_dir,val_or_train):
         obj = {
             "bbox": df.loc[i, 'center_x':'angle'].values.tolist(),
             "bbox_mode": BoxMode.XYWHA_ABS,
-            "category_id": int(df.loc[i,'class_id'])-1,# detectron2 에서는 class number값이 배경을 나타내게 되어있다. 원래 클래스 아이디에서 하나 뺌
+            "category_id": int(df.loc[i, 'class_id']) - 1,
+            # detectron2 에서는 class number값이 배경을 나타내게 되어있다. 원래 클래스 아이디에서 하나 뺌
             "iscrowd": 0
         }
-        if math.floor(10*(i-1)/df.shape[0]) != math.floor(10*i/df.shape[0]):
+        if math.floor(10 * (i - 1) / df.shape[0]) != math.floor(10 * i / df.shape[0]):
             print(i / df.shape[0])
 
         file_name_dict[filename]["annotations"].append(obj)
@@ -125,20 +128,23 @@ def get_ADDxywht_dicts(dataset_dir,val_or_train):
         dataset_dicts.append(record)
     return dataset_dicts
 
+
 ########### dataset setting part ###########
 from detectron2.data import DatasetCatalog, MetadataCatalog
 
-dataset_dir = os.path.expanduser('~/ADD_dataset/train/') # symbolik link를 유저 path 바로 밑에 설치.(ex :sudo ln -sT ~/hddu/dataset_ADD_20191122/ ~/ADD_dataset)
-origin_ADD_csv = os.path.join(dataset_dir,'labels.csv')
-train_csv_path = os.path.join(dataset_dir,'ADD_train.csv')
-val_csv_path = os.path.join(dataset_dir,'ADD_val.csv')
+dataset_dir = os.path.expanduser(
+    '~/ADD_dataset/train/')  # symbolik link를 유저 path 바로 밑에 설치.(ex :sudo ln -sT ~/hddu/dataset_ADD_20191122/ ~/ADD_dataset)
+origin_ADD_csv = os.path.join(dataset_dir, 'labels.csv')
+train_csv_path = os.path.join(dataset_dir, 'ADD_train.csv')
+val_csv_path = os.path.join(dataset_dir, 'ADD_val.csv')
 
 ## divide ADD label csv to train & validation and save label
-seperate_train_val(0.18,origin_ADD_csv,train_csv_path,val_csv_path)
+seperate_train_val(0.18, origin_ADD_csv, train_csv_path, val_csv_path)
 
 for d in ["train", "val"]:
-    DatasetCatalog.register("ADDxywht_" + d, lambda d=d: get_ADDxywht_dicts(dataset_dir,d))
-    MetadataCatalog.get("ADDxywht_" + d).set(thing_classes=['container', 'oil tanker','aircraft carrier','maritime vessels'])
+    DatasetCatalog.register("ADDxywht_" + d, lambda d=d: get_ADDxywht_dicts(dataset_dir, d))
+    MetadataCatalog.get("ADDxywht_" + d).set(
+        thing_classes=['container', 'oil tanker', 'aircraft carrier', 'maritime vessels'])
 ADDxywht_metadata = MetadataCatalog.get("ADDxywht_train")
 ##################################################################
 
@@ -163,87 +169,89 @@ ADDxywht_metadata = MetadataCatalog.get("ADDxywht_train")
 #     cv2.destroyAllWindows()
 ##################################################################
 
-########### config file setting ###########
+############################## config file setting #################################################
 ClassCount = 4
-input_image_scale=3000
-image_resize = 1250 # 이 코드에서 인풋이미지의 사이즈는 이것으로 결정된다. 
+input_image_scale = 3000 # ADD dataset crop 안했을 때 image scale
+max_image_resize = 800  # 이 코드에서 maximum 인풋이미지의 사이즈는 이것으로 결정된다.
+num_of_training_imgs = 1300 # ADD dataset crop 안했을 때 training image개수
+imgs_per_batch = 2 # 이 코드에서 쓰일 batch size
+iter_per_epoch = int(num_of_training_imgs/imgs_per_batch)
+wanted_epoch = 130
+resume_training = False # Decide whether to continue training.
+
 cfg = get_cfg()
 cfg.OUTPUT_DIR = './module_jinkim/output'
-cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml"))
-cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml") # Let training initialize from model zoo
-# cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth") # Resume
+cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
+
+if resume_training: # Resume
+    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")  # Resume
+else:
+    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
+
 cfg.DATASETS.TRAIN = (['ADDxywht_train'])
 cfg.DATASETS.TEST = (['ADDxywht_val'])
 # Maximum size of the side of the image during training
-cfg.INPUT.MAX_SIZE_TRAIN =image_resize 
+cfg.INPUT.MAX_SIZE_TRAIN = max_image_resize
 # Size of the smallest side of the image during training
-cfg.INPUT.MIN_SIZE_TRAIN = (1000,1100,1200,image_resize )
+cfg.INPUT.MIN_SIZE_TRAIN = (
+max_image_resize - 400, max_image_resize - 300, max_image_resize - 200, max_image_resize - 100, max_image_resize)
 # Size of the smallest side of the image during testing. Set to zero to disable resize in testing.
-cfg.INPUT.MIN_SIZE_TEST = image_resize
+cfg.INPUT.MIN_SIZE_TEST = max_image_resize
 # Maximum size of the side of the image during testing
-cfg.INPUT.MAX_SIZE_TEST = image_resize 
+cfg.INPUT.MAX_SIZE_TEST = max_image_resize
 
 cfg.DATALOADER.NUM_WORKERS = 4
 
-cfg.TEST.EVAL_PERIOD = 650 
+cfg.TEST.EVAL_PERIOD = iter_per_epoch # evaluation code testing 하고 싶으면 이 숫자를 조절하면 된다.
 
-cfg.SOLVER.CHECKPOINT_PERIOD = 650
-cfg.SOLVER.IMS_PER_BATCH = 2
-cfg.SOLVER.BASE_LR = 0.008  # pick a good LR
-cfg.SOLVER.MAX_ITER = 85000   # 300 iterations seems good enough for this toy dataset; you may need to train longer for a practical dataset
+cfg.SOLVER.CHECKPOINT_PERIOD = iter_per_epoch
+cfg.SOLVER.BASE_LR = cfg.SOLVER.BASE_LR*imgs_per_batch/cfg.SOLVER.IMS_PER_BATCH # default setting과 batch size를 비교하여 lr을 자동 설정.
+cfg.SOLVER.IMS_PER_BATCH = imgs_per_batch # base_LR 설정과 순서 뒤바뀌지 말것.
+cfg.SOLVER.MAX_ITER = wanted_epoch * iter_per_epoch  # 300 iterations seems good enough for this toy dataset; you may need to train longer for a practical dataset
+cfg.SOLVER.STEPS = (int(cfg.SOLVER.MAX_ITER*21/27), int(cfg.SOLVER.MAX_ITER*25/27)) # 3x scheduler setting
 
-cfg.MODEL.MASK_ON=False
+cfg.MODEL.MASK_ON = False
 cfg.MODEL.ROI_HEADS.NAME = "RROIHeads"
-cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512 # faster, and good enough for this toy dataset (default: 512)
+cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512  # faster, and good enough for this toy dataset (default: 512)
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = ClassCount
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5  # set threshold for this model
 cfg.MODEL.PROPOSAL_GENERATOR.NAME = "RRPN"
 cfg.MODEL.RPN.HEAD_NAME = "StandardRPNHead"
-cfg.MODEL.RPN.BBOX_REG_WEIGHTS = (1,1,1,1,1)
+cfg.MODEL.RPN.BBOX_REG_WEIGHTS = (1, 1, 1, 1, 1)
 cfg.MODEL.ANCHOR_GENERATOR.NAME = "RotatedAnchorGenerator"
-cfg.MODEL.ANCHOR_GENERATOR.ANGLES = [[0,30,60,90]]
-#cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.5, 1.0, 2.0]] # 원본
-cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.2,0.2857,0.5,2.0,3.5,5]] # 수정
+cfg.MODEL.ANCHOR_GENERATOR.ANGLES = [[0, 30, 60, 90]]
+# cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.5, 1.0, 2.0]] # 원본
+cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.2, 0.2857, 0.5, 2.0, 3.5, 5]]  # 수정
 
 cfg.MODEL.ROI_BOX_HEAD.POOLER_TYPE = "ROIAlignRotated"
 cfg.MODEL.ROI_BOX_HEAD.BBOX_REG_WEIGHTS = (10.0, 10.0, 5.0, 5.0, 10.0)
 
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
-##################################################################
+print('FINAL CONFIG FILE')
+print(cfg)
+########################################################################################################
 
 ########### training part ###########
-def my_transform_instance_annotations(annotation, transforms, image_size, *, keypoint_hflip_indices=None):
-  annotation["bbox"] = transforms.apply_rotated_box(np.asarray([annotation['bbox']]))[0]
-  annotation["bbox_mode"] = BoxMode.XYWHA_ABS
-  return annotation
 
-def mapper(dataset_dict):
-  dataset_dict = copy.deepcopy(dataset_dict)  # it will be modified by code below
-  image = utils.read_image(dataset_dict["file_name"], format="BGR")
-  image, transforms = T.apply_transform_gens([T.Resize((image_resize ,image_resize))], image)
-  dataset_dict["image"] = torch.as_tensor(image.transpose(2, 0, 1).astype("float32"))
-  annos = [
-      my_transform_instance_annotations(obj, transforms, image.shape[:2])  
-      for obj in dataset_dict.pop("annotations")
-      if obj.get("iscrowd", 0) == 0
-  ]
-  instances = utils.annotations_to_instances_rotated(annos, image.shape[:2])
-  dataset_dict["instances"] = utils.filter_empty_instances(instances)
-  return dataset_dict
-
+# 이거를 DefaultTrainer를 상속한 다른 클래스로 고치자. 예시 : https://github.com/facebookresearch/detectron2/blob/master/projects/DensePose/train_net.py
 class MyTrainer(DefaultTrainer):
-  @classmethod
-  def build_evaluator(cls, cfg, dataset_name):
-      output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
-      evaluators = [RotatedCOCOEvaluator(dataset_name, cfg, True, output_folder)]
-      return DatasetEvaluators(evaluators)
-      
-  @classmethod
-  def build_train_loader(cls, cfg):
-        return build_detection_train_loader(cfg,mapper=mapper)
+    @classmethod
+    def build_evaluator(cls, cfg, dataset_name):
+        output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
+        evaluators = [RotatedCOCOEvaluator(dataset_name, cfg, True, output_folder)]
+        return DatasetEvaluators(evaluators)
 
-trainer = MyTrainer(cfg)  # 이거를 DefaultTrainer를 상속한 다른 클래스로 고치자. 예시 : https://github.com/facebookresearch/detectron2/blob/master/projects/DensePose/train_net.py
-trainer.resume_or_load(resume=False)
+    @classmethod
+    def build_train_loader(cls, cfg):
+        return build_detection_train_loader(cfg, mapper=ADDDatasetMapper(cfg,True))
+
+    @classmethod
+    def build_test_loader(cls, cfg, dataset_name):
+        return build_detection_test_loader(cfg, dataset_name, mapper=ADDDatasetMapper(cfg, False))
+
+
+trainer = MyTrainer(cfg)
+trainer.resume_or_load(resume=resume_training)
 trainer.train()
 ##################################################################
 
