@@ -54,7 +54,7 @@ If you use Detectron2 in your research or wish to refer to the baseline results 
   year =         {2019}
 }
 ```
-## adding information
+## About BaseLR
 
 base LR does not matter with # of GPUS. Follow linear scale rule only with batch size.
 
