@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
@@ -38,11 +37,9 @@ def read_image(file_name, format=None):
     """
     Read an image into the given format.
     Will apply rotation and flipping if the image has such exif information.
-
     Args:
         file_name (str): image file path
         format (str): one of the supported image modes in PIL, or "BGR"
-
     Returns:
         image (np.ndarray): an HWC image in the given format.
     """
@@ -99,7 +96,6 @@ def check_image_size(dataset_dict, image):
 def transform_proposals(dataset_dict, image_shape, transforms, min_box_side_len, proposal_topk):
     """
     Apply transformations to the proposals in dataset_dict, if any.
-
     Args:
         dataset_dict (dict): a dict read from the dataset, possibly
             contains fields "proposal_boxes", "proposal_objectness_logits", "proposal_bbox_mode"
@@ -107,7 +103,6 @@ def transform_proposals(dataset_dict, image_shape, transforms, min_box_side_len,
         transforms (TransformList):
         min_box_side_len (int): keep proposals with at least this size
         proposal_topk (int): only keep top-K scoring proposals
-
     The input dict is modified in-place, with abovementioned keys removed. A new
     key "proposals" will be added. Its value is an `Instances`
     object which contains the transformed proposals in its field
@@ -143,19 +138,16 @@ def transform_instance_annotations(
 ):
     """
     Apply transforms to box, segmentation and keypoints annotations of a single instance.
-
     It will use `transforms.apply_box` for the box, and
     `transforms.apply_coords` for segmentation polygons & keypoints.
     If you need anything more specially designed for each data structure,
     you'll need to implement your own version of this function or the transforms.
-
     Args:
         annotation (dict): dict of instance annotations for a single instance.
             It will be modified in-place.
         transforms (TransformList):
         image_size (tuple): the height, width of the transformed image
         keypoint_hflip_indices (ndarray[int]): see `create_keypoint_hflip_indices`.
-
     Returns:
         dict:
             the same input dict with fields "bbox", "segmentation", "keypoints"
@@ -211,7 +203,6 @@ def transform_instance_annotations(
 def transform_keypoint_annotations(keypoints, transforms, image_size, keypoint_hflip_indices=None):
     """
     Transform keypoint annotations of an image.
-
     Args:
         keypoints (list[float]): Nx3 float in Detectron2 Dataset format.
         transforms (TransformList):
@@ -246,12 +237,10 @@ def annotations_to_instances(annos, image_size, mask_format="polygon"):
     """
     Create an :class:`Instances` object used by the models,
     from instance annotations in the dataset dict.
-
     Args:
         annos (list[dict]): a list of instance annotations in one image, each
             element for one instance.
         image_size (tuple): height, width
-
     Returns:
         Instances:
             It will contain fields "gt_boxes", "gt_classes",
@@ -312,12 +301,10 @@ def annotations_to_instances_rotated(annos, image_size):
     Create an :class:`Instances` object used by the models,
     from instance annotations in the dataset dict.
     Compared to `annotations_to_instances`, this function is for rotated boxes only
-
     Args:
         annos (list[dict]): a list of instance annotations in one image, each
             element for one instance.
         image_size (tuple): height, width
-
     Returns:
         Instances:
             Containing fields "gt_boxes", "gt_classes",
@@ -339,12 +326,10 @@ def annotations_to_instances_rotated(annos, image_size):
 def filter_empty_instances(instances, by_box=True, by_mask=True):
     """
     Filter out empty instances in an `Instances` object.
-
     Args:
         instances (Instances):
         by_box (bool): whether to filter out instances with empty boxes
         by_mask (bool): whether to filter out instances with empty masks
-
     Returns:
         Instances: the filtered instances.
     """
@@ -391,7 +376,6 @@ def gen_crop_transform_with_instance(crop_size, image_size, instance):
     """
     Generate a CropTransform so that the cropping region contains
     the center of the given instance.
-
     Args:
         crop_size (tuple): h, w in pixels
         image_size (tuple): h, w
@@ -420,11 +404,9 @@ def gen_crop_transform_with_instance(crop_size, image_size, instance):
 def check_metadata_consistency(key, dataset_names):
     """
     Check that the datasets have consistent metadata.
-
     Args:
         key (str): a metadata key
         dataset_names (list[str]): a list of dataset names
-
     Raises:
         AttributeError: if the key does not exist in the metadata
         ValueError: if the given datasets do not have the same metadata values defined by key
@@ -450,7 +432,6 @@ def build_transform_gen(cfg, is_train):
     """
     Create a list of :class:`TransformGen` from config.
     Now it includes resizing and flipping.
-
     Returns:
         list[TransformGen]
     """

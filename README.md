@@ -54,3 +54,12 @@ If you use Detectron2 in your research or wish to refer to the baseline results 
   year =         {2019}
 }
 ```
+## adding information
+
+base LR does not matter with # of GPUS. Follow linear scale rule only with batch size.
+
+(By default, the learning rate is set based on the number of 8 gpu and the batch size 16 (usually). The learning rate can be adjusted proportionally to the batch size regardless of the # of gpus)
+
+(detectron2 use distributeddataparallel module : average gradient between every iteration)
+
+
