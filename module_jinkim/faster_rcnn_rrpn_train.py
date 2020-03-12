@@ -23,6 +23,7 @@ from detectron2.structures import (
     RotatedBoxes,
     polygons_to_bitmask,
 )
+from detectron2.config import CfgNode as CN
 from module_jinkim import ADDDatasetMapper
 
 
@@ -223,8 +224,6 @@ cfg.MODEL.PROPOSAL_GENERATOR.NAME = "RRPN"
 
 cfg.MODEL.RPN.HEAD_NAME = "StandardRPNHead"
 cfg.MODEL.RPN.BBOX_REG_WEIGHTS = (1, 1, 1, 1, 1)
-
-
 # R3det anchor setting
 anrsc_p_pmd = [1,2**(1/3),2**(2/3)] # anchor scales per pyramid
 cfg.MODEL.ANCHOR_GENERATOR.NAME = "RotatedAnchorGenerator"
@@ -234,6 +233,15 @@ cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.2, 1/3, 0.5, 2.0, 3, 5]]  # ìˆ˜ì 
 
 cfg.MODEL.ROI_BOX_HEAD.POOLER_TYPE = "ROIAlignRotated"
 cfg.MODEL.ROI_BOX_HEAD.BBOX_REG_WEIGHTS = (10.0, 10.0, 5.0, 5.0, 10.0)
+
+# cfg.TEST.AUG = CN({"ENABLED": False})
+# cfg.TEST.AUG.MIN_SIZES = (400, 500, 600, 700, 800, 900, 1000, 1100, 1200)
+# cfg.TEST.AUG.MAX_SIZE = 4000
+# cfg.TEST.AUG.FLIP = True
+#
+# cfg.TEST.PRECISE_BN = CN({"ENABLED": False})
+# cfg.TEST.PRECISE_BN.NUM_ITER = 200
+
 
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 print('FINAL CONFIG FILE')
