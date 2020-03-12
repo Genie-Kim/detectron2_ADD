@@ -177,16 +177,17 @@ imgs_per_batch = 1 # 이 코드에서 쓰일 batch size
 iter_per_epoch = int(num_of_training_imgs/imgs_per_batch)
 iter_alpha = 0 # 추가적으로 iteration 돌리고 싶을 때 이 값을 추가한다.(전체 iteration과 lr이 감소하는 타이밍이 linear하게 늘어남.)
 resume_training = False # Decide whether to continue training.
-epoch_per_savemodel = 2
+epoch_per_savemodel = 1 # saving per epoch
 
 cfg = get_cfg()
 cfg.OUTPUT_DIR = './module_jinkim/output'
-cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
+configfile = "COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml"
+cfg.merge_from_file(model_zoo.get_config_file(configfile))
 
 if resume_training: # Resume
     cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")  # Resume
 else:
-    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
+    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(configfile)  # Let training initialize from model zoo
 
 cfg.DATASETS.TRAIN = (['ADDxywht_train'])
 cfg.DATASETS.TEST = (['ADDxywht_val'])
@@ -202,7 +203,7 @@ cfg.INPUT.MAX_SIZE_TEST = max_image_resize
 
 cfg.DATALOADER.NUM_WORKERS = 4
 
-cfg.TEST.EVAL_PERIOD = iter_per_epoch*epoch_per_savemodel # evaluation code testing 하고 싶으면 이 숫자를 조절하면 된다.
+cfg.TEST.EVAL_PERIOD = iter_per_epoch # evaluation code testing 하고 싶으면 이 숫자를 조절하면 된다.
 # scheduler & learning rate (기존의 것에 비례 혹은 반비례 하게 설정함)
 cfg.SOLVER.CHECKPOINT_PERIOD = iter_per_epoch*epoch_per_savemodel
 batch_rate = imgs_per_batch/cfg.SOLVER.IMS_PER_BATCH
