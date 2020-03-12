@@ -96,7 +96,7 @@ def get_ADDxywht_dicts(dataset_dir, val_or_train):
     df = (df.reset_index()).drop(columns='index')  # annotation이 몇개 빠지기 때문에 reset index 해준다.
 
     file_name_dict = {}
-    for i in range(df.shape[0]):
+    for i in tqdm(range(df.shape[0]),desc='get ADD '+val_or_train + " dataset upload"):
         filename = os.path.join(img_dir, df.loc[i, 'file_name'])
         # height, width = cv2.imread(filename).shape[:2]
         height = image_shape
@@ -116,8 +116,8 @@ def get_ADDxywht_dicts(dataset_dir, val_or_train):
             # detectron2 에서는 class number값이 배경을 나타내게 되어있다. 원래 클래스 아이디에서 하나 뺌
             "iscrowd": 0
         }
-        if math.floor(10 * (i - 1) / df.shape[0]) != math.floor(10 * i / df.shape[0]):
-            print(i / df.shape[0])
+        # if math.floor(10 * (i - 1) / df.shape[0]) != math.floor(10 * i / df.shape[0]):
+        #     print(i / df.shape[0])
 
         file_name_dict[filename]["annotations"].append(obj)
 
@@ -132,8 +132,7 @@ def get_ADDxywht_dicts(dataset_dir, val_or_train):
 ########### dataset setting part ###########
 from detectron2.data import DatasetCatalog, MetadataCatalog
 
-dataset_dir = os.path.expanduser(
-    '~/ADD_dataset/train/')  # symbolik link를 유저 path 바로 밑에 설치.(ex :sudo ln -sT ~/hddu/dataset_ADD_20191122/ ~/ADD_dataset)
+dataset_dir = os.path.expanduser('~/ADD_dataset/train/')  # symbolik link를 유저 path 바로 밑에 설치.(ex :sudo ln -sT ~/hddu/dataset_ADD_20191122/ ~/ADD_dataset)
 origin_ADD_csv = os.path.join(dataset_dir, 'labels.csv')
 train_csv_path = os.path.join(dataset_dir, 'ADD_train.csv')
 val_csv_path = os.path.join(dataset_dir, 'ADD_val.csv')
@@ -145,7 +144,7 @@ for d in ["train", "val"]:
     DatasetCatalog.register("ADDxywht_" + d, lambda d=d: get_ADDxywht_dicts(dataset_dir, d))
     MetadataCatalog.get("ADDxywht_" + d).set(
         thing_classes=['container', 'oil tanker', 'aircraft carrier', 'maritime vessels'])
-ADDxywht_metadata = MetadataCatalog.get("ADDxywht_train")
+
 ##################################################################
 
 ########### dataset의 gt가 올바르게 등록되었는지 확인하는 코드 ###########
@@ -174,10 +173,11 @@ ClassCount = 4
 input_image_scale = 3000 # ADD dataset crop 안했을 때 image scale
 max_image_resize = 800  # 이 코드에서 maximum 인풋이미지의 사이즈는 이것으로 결정된다.
 num_of_training_imgs = 1300 # ADD dataset crop 안했을 때 training image개수
-imgs_per_batch = 2 # 이 코드에서 쓰일 batch size
+imgs_per_batch = 1 # 이 코드에서 쓰일 batch size
 iter_per_epoch = int(num_of_training_imgs/imgs_per_batch)
-wanted_epoch = 130
+iter_alpha = 0 # 추가적으로 iteration 돌리고 싶을 때 이 값을 추가한다.(전체 iteration과 lr이 감소하는 타이밍이 linear하게 늘어남.)
 resume_training = False # Decide whether to continue training.
+epoch_per_savemodel = 2
 
 cfg = get_cfg()
 cfg.OUTPUT_DIR = './module_jinkim/output'
@@ -202,26 +202,34 @@ cfg.INPUT.MAX_SIZE_TEST = max_image_resize
 
 cfg.DATALOADER.NUM_WORKERS = 4
 
-cfg.TEST.EVAL_PERIOD = iter_per_epoch # evaluation code testing 하고 싶으면 이 숫자를 조절하면 된다.
+cfg.TEST.EVAL_PERIOD = iter_per_epoch*epoch_per_savemodel # evaluation code testing 하고 싶으면 이 숫자를 조절하면 된다.
+# scheduler & learning rate (기존의 것에 비례 혹은 반비례 하게 설정함)
+cfg.SOLVER.CHECKPOINT_PERIOD = iter_per_epoch*epoch_per_savemodel
+batch_rate = imgs_per_batch/cfg.SOLVER.IMS_PER_BATCH
+cfg.SOLVER.STEPS = (int(cfg.SOLVER.STEPS[0]/batch_rate)+iter_alpha, int(cfg.SOLVER.STEPS[1]/batch_rate)+iter_alpha) # 기존의 scheduler setting을 따르되, 배치 사이즈에 따라 늘리고 줄인다.
+cfg.SOLVER.MAX_ITER = int(cfg.SOLVER.MAX_ITER/batch_rate)+iter_alpha # 기존의 scheduler setting을 따르되, 배치 사이즈에 반비례 하여 늘리고 줄인다.
+cfg.SOLVER.BASE_LR = cfg.SOLVER.BASE_LR*batch_rate # default setting과 batch size를 비교하여 lr을 자동 설정.
+cfg.SOLVER.IMS_PER_BATCH = imgs_per_batch # 얘는 맨 나중에 설정! batch_rate 설정과 순서 뒤바뀌지 말것.
 
-cfg.SOLVER.CHECKPOINT_PERIOD = iter_per_epoch
-cfg.SOLVER.BASE_LR = cfg.SOLVER.BASE_LR*imgs_per_batch/cfg.SOLVER.IMS_PER_BATCH # default setting과 batch size를 비교하여 lr을 자동 설정.
-cfg.SOLVER.IMS_PER_BATCH = imgs_per_batch # base_LR 설정과 순서 뒤바뀌지 말것.
-cfg.SOLVER.MAX_ITER = wanted_epoch * iter_per_epoch  # 300 iterations seems good enough for this toy dataset; you may need to train longer for a practical dataset
-cfg.SOLVER.STEPS = (int(cfg.SOLVER.MAX_ITER*21/27), int(cfg.SOLVER.MAX_ITER*25/27)) # 3x scheduler setting
 
 cfg.MODEL.MASK_ON = False
 cfg.MODEL.ROI_HEADS.NAME = "RROIHeads"
 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512  # faster, and good enough for this toy dataset (default: 512)
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = ClassCount
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5  # set threshold for this model
+
 cfg.MODEL.PROPOSAL_GENERATOR.NAME = "RRPN"
+
 cfg.MODEL.RPN.HEAD_NAME = "StandardRPNHead"
 cfg.MODEL.RPN.BBOX_REG_WEIGHTS = (1, 1, 1, 1, 1)
+
+
+# R3det anchor setting
+anrsc_p_pmd = [1,2**(1/3),2**(2/3)] # anchor scales per pyramid
 cfg.MODEL.ANCHOR_GENERATOR.NAME = "RotatedAnchorGenerator"
-cfg.MODEL.ANCHOR_GENERATOR.ANGLES = [[0, 30, 60, 90]]
-# cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.5, 1.0, 2.0]] # 원본
-cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.2, 0.2857, 0.5, 2.0, 3.5, 5]]  # 수정
+cfg.MODEL.ANCHOR_GENERATOR.SIZES = [[32*x for x in anrsc_p_pmd], [64*x for x in anrsc_p_pmd], [128*x for x in anrsc_p_pmd], [256*x for x in anrsc_p_pmd], [512*x for x in anrsc_p_pmd]]
+cfg.MODEL.ANCHOR_GENERATOR.ANGLES = [[15, 30, 45, 60,75, 90]]
+cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.2, 1/3, 0.5, 2.0, 3, 5]]  # 수정
 
 cfg.MODEL.ROI_BOX_HEAD.POOLER_TYPE = "ROIAlignRotated"
 cfg.MODEL.ROI_BOX_HEAD.BBOX_REG_WEIGHTS = (10.0, 10.0, 5.0, 5.0, 10.0)
@@ -270,6 +278,7 @@ trainer.train()
 # cfg.DATASETS.TEST = (['ADDxywht_val'])
 # predictor = DefaultPredictor(cfg)
 # dataset_dicts = get_ADDxywht_dicts(dataset_dir,'val')
+# ADDxywht_metadata = MetadataCatalog.get("ADDxywht_val")
 # for d in random.sample(dataset_dicts, 3):
 #     im = cv2.imread(d["file_name"])
 #     outputs = predictor(im)
