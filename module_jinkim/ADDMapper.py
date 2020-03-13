@@ -2,6 +2,7 @@ import copy
 import logging
 import numpy as np
 import torch
+from detectron2.data.transforms import RandomContrast, RandomBrightness
 from fvcore.common.file_io import PathManager
 from PIL import Image
 
