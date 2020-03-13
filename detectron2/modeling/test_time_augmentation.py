@@ -213,7 +213,6 @@ class GeneralizedRCNNWithTTA(nn.Module):
         aug_vars = {"height": height, "width": width, "do_hflip": do_hflip}
 
         return augmented_inputs, aug_vars
-
     def _get_augmented_boxes(self, augmented_inputs, aug_vars):
         # 1: forward with all augmented images
         outputs = self._batch_inference(augmented_inputs, do_postprocess=False)
