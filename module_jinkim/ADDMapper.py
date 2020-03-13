@@ -109,6 +109,10 @@ class ADDDatasetMapper:
                 )
                 image = crop_tfm.apply_image(image)
             image, transforms = T.apply_transform_gens(self.tfm_gens, image)
+            additional_transform = [T.RandomContrast(0.5,1.5),T.RandomBrightness(0.5,1.5)] # annotation에 영향이 없는 변화만 허가된다. 밝기 augmentation.
+            image, _ = T.apply_transform_gens(additional_transform,image)
+            print('T.RandomContrast(0.5,1.5),T.RandomBrightness(0.5,1.5) is USED!!')
+
             if self.crop_gen:
                 transforms = crop_tfm + transforms
 
