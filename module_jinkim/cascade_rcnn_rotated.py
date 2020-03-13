@@ -172,9 +172,9 @@ for d in ["train", "val"]:
 ############################## config file setting #################################################
 ClassCount = 4
 input_image_scale = 3000 # ADD dataset crop 안했을 때 image scale
-cropped_image_size = 550  # 이 코드에서 maximum 인풋이미지의 사이즈는 이것으로 결정된다. # 800 cropping later(for batch size problem)..
+cropped_image_size = 850  # 이 코드에서 maximum 인풋이미지의 사이즈는 이것으로 결정된다. # 800 cropping later(for batch size problem)..
 num_of_training_imgs = 1300 # ADD dataset crop 안했을 때 training image개수
-imgs_per_batch = 1 # 이 코드에서 쓰일 batch size
+imgs_per_batch = 4 # 이 코드에서 쓰일 batch size
 iter_per_epoch = int(num_of_training_imgs/imgs_per_batch)
 iter_alpha = 0 # 추가적으로 iteration 돌리고 싶을 때 이 값을 추가한다.(전체 iteration과 lr이 감소하는 타이밍이 linear하게 늘어남.)
 resume_training = False # Decide whether to continue training.
@@ -225,9 +225,9 @@ cfg.MODEL.RPN.BBOX_REG_WEIGHTS = (1, 1, 1, 1, 1)
 # R3det anchor setting
 anrsc_p_pmd = [1,2**(1/3)] # anchor scales per pyramid
 ############ training testing part for memory saving ##############
-anrsc_p_pmd = [1] # anchor scales per pyramid
-cfg.INPUT.MAX_SIZE_TRAIN = cropped_image_size
-cfg.INPUT.MIN_SIZE_TRAIN = cropped_image_size
+# anrsc_p_pmd = [1] # anchor scales per pyramid
+# cfg.INPUT.MAX_SIZE_TRAIN = cropped_image_size
+# cfg.INPUT.MIN_SIZE_TRAIN = cropped_image_size
 ############ ###################################3### ##############
 cfg.MODEL.ANCHOR_GENERATOR.NAME = "RotatedAnchorGenerator"
 cfg.MODEL.ANCHOR_GENERATOR.SIZES = [[32*x for x in anrsc_p_pmd], [64*x for x in anrsc_p_pmd], [128*x for x in anrsc_p_pmd], [256*x for x in anrsc_p_pmd], [512*x for x in anrsc_p_pmd]]
