@@ -1,1 +1,1 @@
-python3 ./faster_rcnn_rrpn_train.py
+python3 ./cascade_rcnn_rotated.py

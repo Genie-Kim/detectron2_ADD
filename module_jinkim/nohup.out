@@ -1,0 +1,1132 @@
+FINAL CONFIG FILE
+CUDNN_BENCHMARK: False
+DATALOADER:
+  ASPECT_RATIO_GROUPING: True
+  FILTER_EMPTY_ANNOTATIONS: True
+  NUM_WORKERS: 4
+  REPEAT_THRESHOLD: 0.0
+  SAMPLER_TRAIN: TrainingSampler
+DATASETS:
+  PRECOMPUTED_PROPOSAL_TOPK_TEST: 1000
+  PRECOMPUTED_PROPOSAL_TOPK_TRAIN: 2000
+  PROPOSAL_FILES_TEST: ()
+  PROPOSAL_FILES_TRAIN: ()
+  TEST: ['ADDxywht_val']
+  TRAIN: ['ADDxywht_train']
+GLOBAL:
+  HACK: 1.0
+INPUT:
+  CROP:
+    ENABLED: False
+  FORMAT: BGR
+  MASK_FORMAT: polygon
+  MAX_SIZE_TEST: 750
+  MAX_SIZE_TRAIN: 800
+  MIN_SIZE_TEST: 750
+  MIN_SIZE_TRAIN: (600, 800)
+  MIN_SIZE_TRAIN_SAMPLING: range
+MODEL:
+  ANCHOR_GENERATOR:
+    ANGLES: [[15, 30, 45, 60, 75, 90]]
+    ASPECT_RATIOS: [[0.2, 0.3333333333333333, 0.5, 2.0, 3, 5]]
+    NAME: RotatedAnchorGenerator
+    OFFSET: 0.0
+    SIZES: [[32, 40.31747359663594], [64, 80.63494719327188], [128, 161.26989438654377], [256, 322.53978877308754], [512, 645.0795775461751]]
+  BACKBONE:
+    FREEZE_AT: 2
+    NAME: build_resnet_fpn_backbone
+  DEVICE: cuda
+  FPN:
+    FUSE_TYPE: sum
+    IN_FEATURES: ['res2', 'res3', 'res4', 'res5']
+    NORM: 
+    OUT_CHANNELS: 256
+  KEYPOINT_ON: False
+  LOAD_PROPOSALS: False
+  MASK_ON: False
+  META_ARCHITECTURE: GeneralizedRCNN
+  PANOPTIC_FPN:
+    COMBINE:
+      ENABLED: True
+      INSTANCES_CONFIDENCE_THRESH: 0.5
+      OVERLAP_THRESH: 0.5
+      STUFF_AREA_LIMIT: 4096
+    INSTANCE_LOSS_WEIGHT: 1.0
+  PIXEL_MEAN: [103.53, 116.28, 123.675]
+  PIXEL_STD: [1.0, 1.0, 1.0]
+  PROPOSAL_GENERATOR:
+    MIN_SIZE: 0
+    NAME: RRPN
+  RESNETS:
+    DEFORM_MODULATED: False
+    DEFORM_NUM_GROUPS: 1
+    DEFORM_ON_PER_STAGE: [False, True, True, True]
+    DEPTH: 152
+    NORM: FrozenBN
+    NUM_GROUPS: 32
+    OUT_FEATURES: ['res2', 'res3', 'res4', 'res5']
+    RES2_OUT_CHANNELS: 256
+    RES5_DILATION: 1
+    STEM_OUT_CHANNELS: 64
+    STRIDE_IN_1X1: False
+    WIDTH_PER_GROUP: 8
+  RETINANET:
+    BBOX_REG_WEIGHTS: (1.0, 1.0, 1.0, 1.0)
+    FOCAL_LOSS_ALPHA: 0.25
+    FOCAL_LOSS_GAMMA: 2.0
+    IN_FEATURES: ['p3', 'p4', 'p5', 'p6', 'p7']
+    IOU_LABELS: [0, -1, 1]
+    IOU_THRESHOLDS: [0.4, 0.5]
+    NMS_THRESH_TEST: 0.5
+    NUM_CLASSES: 80
+    NUM_CONVS: 4
+    PRIOR_PROB: 0.01
+    SCORE_THRESH_TEST: 0.05
+    SMOOTH_L1_LOSS_BETA: 0.1
+    TOPK_CANDIDATES_TEST: 1000
+  ROI_BOX_CASCADE_HEAD:
+    BBOX_REG_WEIGHTS: ((10.0, 10.0, 5.0, 5.0, 10.0), (20.0, 20.0, 10.0, 10.0, 20.0), (30.0, 30.0, 15.0, 15.0, 30.0))
+    IOUS: (0.5, 0.6, 0.7)
+  ROI_BOX_HEAD:
+    BBOX_REG_WEIGHTS: (10.0, 10.0, 5.0, 5.0, 10.0)
+    CLS_AGNOSTIC_BBOX_REG: True
+    CONV_DIM: 256
+    FC_DIM: 1024
+    NAME: FastRCNNConvFCHead
+    NORM: GN
+    NUM_CONV: 4
+    NUM_FC: 1
+    POOLER_RESOLUTION: 7
+    POOLER_SAMPLING_RATIO: 0
+    POOLER_TYPE: ROIAlignRotated
+    SMOOTH_L1_BETA: 0.0
+    TRAIN_ON_PRED_BOXES: False
+  ROI_HEADS:
+    BATCH_SIZE_PER_IMAGE: 512
+    IN_FEATURES: ['p2', 'p3', 'p4', 'p5']
+    IOU_LABELS: [0, 1]
+    IOU_THRESHOLDS: [0.5]
+    NAME: CascadeRROIHeads
+    NMS_THRESH_TEST: 0.5
+    NUM_CLASSES: 4
+    POSITIVE_FRACTION: 0.25
+    PROPOSAL_APPEND_GT: True
+    SCORE_THRESH_TEST: 0.5
+  ROI_KEYPOINT_HEAD:
+    CONV_DIMS: (512, 512, 512, 512, 512, 512, 512, 512)
+    LOSS_WEIGHT: 1.0
+    MIN_KEYPOINTS_PER_IMAGE: 1
+    NAME: KRCNNConvDeconvUpsampleHead
+    NORMALIZE_LOSS_BY_VISIBLE_KEYPOINTS: True
+    NUM_KEYPOINTS: 17
+    POOLER_RESOLUTION: 14
+    POOLER_SAMPLING_RATIO: 0
+    POOLER_TYPE: ROIAlignV2
+  ROI_MASK_HEAD:
+    CLS_AGNOSTIC_MASK: False
+    CONV_DIM: 256
+    NAME: MaskRCNNConvUpsampleHead
+    NORM: GN
+    NUM_CONV: 8
+    POOLER_RESOLUTION: 14
+    POOLER_SAMPLING_RATIO: 0
+    POOLER_TYPE: ROIAlignV2
+  RPN:
+    BATCH_SIZE_PER_IMAGE: 256
+    BBOX_REG_WEIGHTS: (1, 1, 1, 1, 1)
+    BOUNDARY_THRESH: -1
+    HEAD_NAME: StandardRPNHead
+    IN_FEATURES: ['p2', 'p3', 'p4', 'p5', 'p6']
+    IOU_LABELS: [0, -1, 1]
+    IOU_THRESHOLDS: [0.3, 0.7]
+    LOSS_WEIGHT: 1.0
+    NMS_THRESH: 0.7
+    POSITIVE_FRACTION: 0.5
+    POST_NMS_TOPK_TEST: 1000
+    POST_NMS_TOPK_TRAIN: 2000
+    PRE_NMS_TOPK_TEST: 1000
+    PRE_NMS_TOPK_TRAIN: 2000
+    SMOOTH_L1_BETA: 0.0
+  SEM_SEG_HEAD:
+    COMMON_STRIDE: 4
+    CONVS_DIM: 128
+    IGNORE_VALUE: 255
+    IN_FEATURES: ['p2', 'p3', 'p4', 'p5']
+    LOSS_WEIGHT: 1.0
+    NAME: SemSegFPNHead
+    NORM: GN
+    NUM_CLASSES: 54
+  WEIGHTS: https://dl.fbaipublicfiles.com/detectron2/Misc/cascade_mask_rcnn_X_152_32x8d_FPN_IN5k_gn_dconv/18131413/model_0039999_e76410.pkl
+OUTPUT_DIR: ./module_jinkim/output
+SEED: -1
+SOLVER:
+  BASE_LR: 0.00625
+  BIAS_LR_FACTOR: 1.0
+  CHECKPOINT_PERIOD: 600
+  CLIP_GRADIENTS:
+    CLIP_TYPE: value
+    CLIP_VALUE: 1.0
+    ENABLED: False
+    NORM_TYPE: 2.0
+  GAMMA: 0.1
+  IMS_PER_BATCH: 5
+  LR_SCHEDULER_NAME: WarmupMultiStepLR
+  MAX_ITER: 1280000
+  MOMENTUM: 0.9
+  STEPS: (896000, 1152000)
+  WARMUP_FACTOR: 0.001
+  WARMUP_ITERS: 1000
+  WARMUP_METHOD: linear
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+  WEIGHT_DECAY_NORM: 0.0
+TEST:
+  AUG:
+    ENABLED: False
+    FLIP: True
+    MAX_SIZE: 4000
+    MIN_SIZES: (400, 500, 600, 700, 800, 900, 1000, 1100, 1200)
+  DETECTIONS_PER_IMAGE: 100
+  EVAL_PERIOD: 600
+  EXPECTED_RESULTS: []
+  KEYPOINT_OKS_SIGMAS: []
+  PRECISE_BN:
+    ENABLED: False
+    NUM_ITER: 200
+VERSION: 2
+VIS_PERIOD: 0
+[32m[03/13 17:53:03 d2.engine.defaults]: [0mModel:
+GeneralizedRCNN(
+  (backbone): FPN(
+    (fpn_lateral2): Conv2d(256, 256, kernel_size=(1, 1), stride=(1, 1))
+    (fpn_output2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (fpn_lateral3): Conv2d(512, 256, kernel_size=(1, 1), stride=(1, 1))
+    (fpn_output3): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (fpn_lateral4): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1))
+    (fpn_output4): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (fpn_lateral5): Conv2d(2048, 256, kernel_size=(1, 1), stride=(1, 1))
+    (fpn_output5): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (top_block): LastLevelMaxPool()
+    (bottom_up): ResNet(
+      (stem): BasicStem(
+        (conv1): Conv2d(
+          3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
+          (norm): FrozenBatchNorm2d(num_features=64, eps=1e-05)
+        )
+      )
+      (res2): Sequential(
+        (0): BottleneckBlock(
+          (shortcut): Conv2d(
+            64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=256, eps=1e-05)
+          )
+          (conv1): Conv2d(
+            64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=256, eps=1e-05)
+          )
+          (conv2): Conv2d(
+            256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=32, bias=False
+            (norm): FrozenBatchNorm2d(num_features=256, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            256, 256, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=256, eps=1e-05)
+          )
+        )
+        (1): BottleneckBlock(
+          (conv1): Conv2d(
+            256, 256, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=256, eps=1e-05)
+          )
+          (conv2): Conv2d(
+            256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=32, bias=False
+            (norm): FrozenBatchNorm2d(num_features=256, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            256, 256, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=256, eps=1e-05)
+          )
+        )
+        (2): BottleneckBlock(
+          (conv1): Conv2d(
+            256, 256, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=256, eps=1e-05)
+          )
+          (conv2): Conv2d(
+            256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=32, bias=False
+            (norm): FrozenBatchNorm2d(num_features=256, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            256, 256, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=256, eps=1e-05)
+          )
+        )
+      )
+      (res3): Sequential(
+        (0): DeformBottleneckBlock(
+          (shortcut): Conv2d(
+            256, 512, kernel_size=(1, 1), stride=(2, 2), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv1): Conv2d(
+            256, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(512, 18, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=512, out_channels=512, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+        )
+        (1): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(512, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=512, out_channels=512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+        )
+        (2): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(512, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=512, out_channels=512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+        )
+        (3): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(512, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=512, out_channels=512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+        )
+        (4): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(512, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=512, out_channels=512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+        )
+        (5): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(512, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=512, out_channels=512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+        )
+        (6): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(512, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=512, out_channels=512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+        )
+        (7): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(512, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=512, out_channels=512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=512, eps=1e-05)
+          )
+        )
+      )
+      (res4): Sequential(
+        (0): DeformBottleneckBlock(
+          (shortcut): Conv2d(
+            512, 1024, kernel_size=(1, 1), stride=(2, 2), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv1): Conv2d(
+            512, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (1): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (2): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (3): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (4): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (5): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (6): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (7): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (8): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (9): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (10): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (11): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (12): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (13): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (14): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (15): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (16): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (17): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (18): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (19): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (20): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (21): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (22): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (23): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (24): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (25): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (26): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (27): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (28): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (29): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (30): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (31): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (32): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (33): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (34): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+        (35): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(1024, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            1024, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=1024, eps=1e-05)
+          )
+        )
+      )
+      (res5): Sequential(
+        (0): DeformBottleneckBlock(
+          (shortcut): Conv2d(
+            1024, 2048, kernel_size=(1, 1), stride=(2, 2), bias=False
+            (norm): FrozenBatchNorm2d(num_features=2048, eps=1e-05)
+          )
+          (conv1): Conv2d(
+            1024, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=2048, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(2048, 18, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=2048, out_channels=2048, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=2048, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            2048, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=2048, eps=1e-05)
+          )
+        )
+        (1): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            2048, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=2048, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(2048, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=2048, out_channels=2048, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=2048, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            2048, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=2048, eps=1e-05)
+          )
+        )
+        (2): DeformBottleneckBlock(
+          (conv1): Conv2d(
+            2048, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=2048, eps=1e-05)
+          )
+          (conv2_offset): Conv2d(2048, 18, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv2): DeformConv(
+            in_channels=2048, out_channels=2048, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), dilation=(1, 1), groups=32, deformable_groups=1, bias=False
+            (norm): FrozenBatchNorm2d(num_features=2048, eps=1e-05)
+          )
+          (conv3): Conv2d(
+            2048, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False
+            (norm): FrozenBatchNorm2d(num_features=2048, eps=1e-05)
+          )
+        )
+      )
+    )
+  )
+  (proposal_generator): RRPN(
+    (anchor_generator): RotatedAnchorGenerator(
+      (cell_anchors): BufferList()
+    )
+    (rpn_head): StandardRPNHead(
+      (conv): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (objectness_logits): Conv2d(256, 72, kernel_size=(1, 1), stride=(1, 1))
+      (anchor_deltas): Conv2d(256, 360, kernel_size=(1, 1), stride=(1, 1))
+    )
+  )
+  (roi_heads): CascadeRROIHeads(
+    (box_pooler): ROIPooler(
+      (level_poolers): ModuleList(
+        (0): ROIAlignRotated(output_size=(7, 7), spatial_scale=0.25, sampling_ratio=0)
+        (1): ROIAlignRotated(output_size=(7, 7), spatial_scale=0.125, sampling_ratio=0)
+        (2): ROIAlignRotated(output_size=(7, 7), spatial_scale=0.0625, sampling_ratio=0)
+        (3): ROIAlignRotated(output_size=(7, 7), spatial_scale=0.03125, sampling_ratio=0)
+      )
+    )
+    (box_head): ModuleList(
+      (0): FastRCNNConvFCHead(
+        (conv1): Conv2d(
+          256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False
+          (norm): GroupNorm(32, 256, eps=1e-05, affine=True)
+        )
+        (conv2): Conv2d(
+          256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False
+          (norm): GroupNorm(32, 256, eps=1e-05, affine=True)
+        )
+        (conv3): Conv2d(
+          256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False
+          (norm): GroupNorm(32, 256, eps=1e-05, affine=True)
+        )
+        (conv4): Conv2d(
+          256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False
+          (norm): GroupNorm(32, 256, eps=1e-05, affine=True)
+        )
+        (fc1): Linear(in_features=12544, out_features=1024, bias=True)
+      )
+      (1): FastRCNNConvFCHead(
+        (conv1): Conv2d(
+          256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False
+          (norm): GroupNorm(32, 256, eps=1e-05, affine=True)
+        )
+        (conv2): Conv2d(
+          256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False
+          (norm): GroupNorm(32, 256, eps=1e-05, affine=True)
+        )
+        (conv3): Conv2d(
+          256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False
+          (norm): GroupNorm(32, 256, eps=1e-05, affine=True)
+        )
+        (conv4): Conv2d(
+          256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False
+          (norm): GroupNorm(32, 256, eps=1e-05, affine=True)
+        )
+        (fc1): Linear(in_features=12544, out_features=1024, bias=True)
+      )
+      (2): FastRCNNConvFCHead(
+        (conv1): Conv2d(
+          256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False
+          (norm): GroupNorm(32, 256, eps=1e-05, affine=True)
+        )
+        (conv2): Conv2d(
+          256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False
+          (norm): GroupNorm(32, 256, eps=1e-05, affine=True)
+        )
+        (conv3): Conv2d(
+          256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False
+          (norm): GroupNorm(32, 256, eps=1e-05, affine=True)
+        )
+        (conv4): Conv2d(
+          256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False
+          (norm): GroupNorm(32, 256, eps=1e-05, affine=True)
+        )
+        (fc1): Linear(in_features=12544, out_features=1024, bias=True)
+      )
+    )
+    (box_predictor): ModuleList(
+      (0): FastRCNNOutputLayers(
+        (cls_score): Linear(in_features=1024, out_features=5, bias=True)
+        (bbox_pred): Linear(in_features=1024, out_features=5, bias=True)
+      )
+      (1): FastRCNNOutputLayers(
+        (cls_score): Linear(in_features=1024, out_features=5, bias=True)
+        (bbox_pred): Linear(in_features=1024, out_features=5, bias=True)
+      )
+      (2): FastRCNNOutputLayers(
+        (cls_score): Linear(in_features=1024, out_features=5, bias=True)
+        (bbox_pred): Linear(in_features=1024, out_features=5, bias=True)
+      )
+    )
+  )
+)
+[32m[03/13 17:53:03 d2.data.detection_utils]: [0mTransformGens used in training: [ResizeShortestEdge(short_edge_length=(600, 800), max_size=800), RandomFlip()]
+get ADD train dataset upload:   0%|          | 0/19249 [00:00<?, ?it/s]get ADD train dataset upload:   1%|1         | 263/19249 [00:00<00:07, 2621.99it/s]get ADD train dataset upload:   3%|2         | 525/19249 [00:00<00:07, 2618.77it/s]get ADD train dataset upload:   4%|4         | 786/19249 [00:00<00:07, 2615.42it/s]get ADD train dataset upload:   5%|5         | 1049/19249 [00:00<00:06, 2617.85it/s]get ADD train dataset upload:   7%|6         | 1313/19249 [00:00<00:06, 2622.84it/s]get ADD train dataset upload:   8%|8         | 1577/19249 [00:00<00:06, 2625.60it/s]get ADD train dataset upload:  10%|9         | 1841/19249 [00:00<00:06, 2628.59it/s]get ADD train dataset upload:  11%|#         | 2105/19249 [00:00<00:06, 2631.84it/s]get ADD train dataset upload:  12%|#2        | 2368/19249 [00:00<00:06, 2628.59it/s]get ADD train dataset upload:  14%|#3        | 2633/19249 [00:01<00:06, 2633.44it/s]get ADD train dataset upload:  15%|#5        | 2898/19249 [00:01<00:06, 2636.75it/s]get ADD train dataset upload:  16%|#6        | 3162/19249 [00:01<00:06, 2636.95it/s]get ADD train dataset upload:  18%|#7        | 3426/19249 [00:01<00:06, 2635.90it/s]get ADD train dataset upload:  19%|#9        | 3691/19249 [00:01<00:05, 2638.54it/s]get ADD train dataset upload:  21%|##        | 3955/19249 [00:01<00:05, 2638.67it/s]get ADD train dataset upload:  22%|##1       | 4219/19249 [00:01<00:05, 2637.52it/s]get ADD train dataset upload:  23%|##3       | 4483/19249 [00:01<00:05, 2635.34it/s]get ADD train dataset upload:  25%|##4       | 4746/19249 [00:01<00:05, 2632.93it/s]get ADD train dataset upload:  26%|##6       | 5010/19249 [00:01<00:05, 2633.79it/s]get ADD train dataset upload:  27%|##7       | 5274/19249 [00:02<00:05, 2624.95it/s]get ADD train dataset upload:  29%|##8       | 5537/19249 [00:02<00:05, 2624.29it/s]get ADD train dataset upload:  30%|###       | 5800/19249 [00:02<00:05, 2624.21it/s]get ADD train dataset upload:  31%|###1      | 6063/19249 [00:02<00:05, 2618.61it/s]get ADD train dataset upload:  33%|###2      | 6325/19249 [00:02<00:04, 2617.47it/s]get ADD train dataset upload:  34%|###4      | 6588/19249 [00:02<00:04, 2619.55it/s]get ADD train dataset upload:  36%|###5      | 6852/19249 [00:02<00:04, 2624.72it/s]get ADD train dataset upload:  37%|###6      | 7116/19249 [00:02<00:04, 2626.40it/s]get ADD train dataset upload:  38%|###8      | 7379/19249 [00:02<00:04, 2627.05it/s]get ADD train dataset upload:  40%|###9      | 7642/19249 [00:02<00:04, 2624.40it/s]get ADD train dataset upload:  41%|####1     | 7906/19249 [00:03<00:04, 2627.46it/s]get ADD train dataset upload:  42%|####2     | 8169/19249 [00:03<00:04, 2624.44it/s]get ADD train dataset upload:  44%|####3     | 8432/19249 [00:03<00:04, 2608.35it/s]get ADD train dataset upload:  45%|####5     | 8695/19249 [00:03<00:04, 2612.84it/s]get ADD train dataset upload:  47%|####6     | 8959/19249 [00:03<00:03, 2618.07it/s]get ADD train dataset upload:  48%|####7     | 9224/19249 [00:03<00:03, 2626.26it/s]get ADD train dataset upload:  49%|####9     | 9488/19249 [00:03<00:03, 2629.05it/s]get ADD train dataset upload:  51%|#####     | 9752/19249 [00:03<00:03, 2631.84it/s]get ADD train dataset upload:  52%|#####2    | 10016/19249 [00:03<00:03, 2629.37it/s]get ADD train dataset upload:  53%|#####3    | 10280/19249 [00:03<00:03, 2631.47it/s]get ADD train dataset upload:  55%|#####4    | 10544/19249 [00:04<00:03, 2628.93it/s]get ADD train dataset upload:  56%|#####6    | 10807/19249 [00:04<00:03, 2616.63it/s]get ADD train dataset upload:  58%|#####7    | 11069/19249 [00:04<00:03, 2614.25it/s]get ADD train dataset upload:  59%|#####8    | 11331/19249 [00:04<00:03, 2613.77it/s]get ADD train dataset upload:  60%|######    | 11593/19249 [00:04<00:03, 2339.41it/s]get ADD train dataset upload:  62%|######1   | 11853/19249 [00:04<00:03, 2411.78it/s]get ADD train dataset upload:  63%|######2   | 12114/19249 [00:04<00:02, 2467.62it/s]get ADD train dataset upload:  64%|######4   | 12375/19249 [00:04<00:02, 2506.37it/s]get ADD train dataset upload:  66%|######5   | 12635/19249 [00:04<00:02, 2533.64it/s]get ADD train dataset upload:  67%|######7   | 12897/19249 [00:04<00:02, 2556.23it/s]get ADD train dataset upload:  68%|######8   | 13158/19249 [00:05<00:02, 2570.64it/s]get ADD train dataset upload:  70%|######9   | 13419/19249 [00:05<00:02, 2579.87it/s]get ADD train dataset upload:  71%|#######1  | 13678/19249 [00:05<00:02, 2577.19it/s]get ADD train dataset upload:  72%|#######2  | 13937/19249 [00:05<00:02, 2575.83it/s]get ADD train dataset upload:  74%|#######3  | 14196/19249 [00:05<00:01, 2577.19it/s]get ADD train dataset upload:  75%|#######5  | 14457/19249 [00:05<00:01, 2585.20it/s]get ADD train dataset upload:  76%|#######6  | 14717/19249 [00:05<00:01, 2587.24it/s]get ADD train dataset upload:  78%|#######7  | 14976/19249 [00:05<00:01, 2586.59it/s]get ADD train dataset upload:  79%|#######9  | 15239/19249 [00:05<00:01, 2598.16it/s]get ADD train dataset upload:  81%|########  | 15501/19249 [00:05<00:01, 2603.17it/s]get ADD train dataset upload:  82%|########1 | 15763/19249 [00:06<00:01, 2605.75it/s]get ADD train dataset upload:  83%|########3 | 16025/19249 [00:06<00:01, 2608.69it/s]get ADD train dataset upload:  85%|########4 | 16286/19249 [00:06<00:01, 2598.98it/s]get ADD train dataset upload:  86%|########5 | 16549/19249 [00:06<00:01, 2605.47it/s]get ADD train dataset upload:  87%|########7 | 16812/19249 [00:06<00:00, 2610.83it/s]get ADD train dataset upload:  89%|########8 | 17075/19249 [00:06<00:00, 2613.63it/s]get ADD train dataset upload:  90%|######### | 17337/19249 [00:06<00:00, 2612.06it/s]get ADD train dataset upload:  91%|#########1| 17599/19249 [00:06<00:00, 2613.49it/s]get ADD train dataset upload:  93%|#########2| 17862/19249 [00:06<00:00, 2617.64it/s]get ADD train dataset upload:  94%|#########4| 18126/19249 [00:06<00:00, 2623.52it/s]get ADD train dataset upload:  96%|#########5| 18390/19249 [00:07<00:00, 2625.71it/s]get ADD train dataset upload:  97%|#########6| 18653/19249 [00:07<00:00, 2625.59it/s]get ADD train dataset upload:  98%|#########8| 18916/19249 [00:07<00:00, 2625.41it/s]get ADD train dataset upload: 100%|#########9| 19179/19249 [00:07<00:00, 2617.33it/s]get ADD train dataset upload: 100%|##########| 19249/19249 [00:07<00:00, 2604.05it/s][32m[03/13 17:53:11 d2.data.build]: [0mRemoved 0 images with no usable annotations. 8028 images left.
+[32m[03/13 17:53:11 d2.data.build]: [0mDistribution of instances among all 4 categories:
+[36m|   category    | #instances   |  category  | #instances   |   category    | #instances   |
+|:-------------:|:-------------|:----------:|:-------------|:-------------:|:-------------|
+|   container   | 4789         | oil tanker | 1854         | aircraft ca.. | 57           |
+| maritime ve.. | 12549        |            |              |               |              |
+|     total     | 19249        |            |              |               |              |[0m
+[32m[03/13 17:53:11 d2.data.common]: [0mSerializing 8028 elements to byte tensors and concatenating them all ...
+[32m[03/13 17:53:12 d2.data.common]: [0mSerialized dataset takes 4.09 MiB
+[32m[03/13 17:53:12 d2.data.build]: [0mUsing training sampler TrainingSampler
+
+'proposal_generator.anchor_generator.cell_anchors.0' has shape (3, 4) in the checkpoint but (72, 5) in the model! Skipped.
+'proposal_generator.anchor_generator.cell_anchors.1' has shape (3, 4) in the checkpoint but (72, 5) in the model! Skipped.
+'proposal_generator.anchor_generator.cell_anchors.2' has shape (3, 4) in the checkpoint but (72, 5) in the model! Skipped.
+'proposal_generator.anchor_generator.cell_anchors.3' has shape (3, 4) in the checkpoint but (72, 5) in the model! Skipped.
+'proposal_generator.anchor_generator.cell_anchors.4' has shape (3, 4) in the checkpoint but (72, 5) in the model! Skipped.
+'proposal_generator.rpn_head.objectness_logits.weight' has shape (3, 256, 1, 1) in the checkpoint but (72, 256, 1, 1) in the model! Skipped.
+'proposal_generator.rpn_head.objectness_logits.bias' has shape (3,) in the checkpoint but (72,) in the model! Skipped.
+'proposal_generator.rpn_head.anchor_deltas.weight' has shape (12, 256, 1, 1) in the checkpoint but (360, 256, 1, 1) in the model! Skipped.
+'proposal_generator.rpn_head.anchor_deltas.bias' has shape (12,) in the checkpoint but (360,) in the model! Skipped.
+'roi_heads.box_predictor.0.cls_score.weight' has shape (81, 1024) in the checkpoint but (5, 1024) in the model! Skipped.
+'roi_heads.box_predictor.0.cls_score.bias' has shape (81,) in the checkpoint but (5,) in the model! Skipped.
+'roi_heads.box_predictor.0.bbox_pred.weight' has shape (4, 1024) in the checkpoint but (5, 1024) in the model! Skipped.
+'roi_heads.box_predictor.0.bbox_pred.bias' has shape (4,) in the checkpoint but (5,) in the model! Skipped.
+'roi_heads.box_predictor.1.cls_score.weight' has shape (81, 1024) in the checkpoint but (5, 1024) in the model! Skipped.
+'roi_heads.box_predictor.1.cls_score.bias' has shape (81,) in the checkpoint but (5,) in the model! Skipped.
+'roi_heads.box_predictor.1.bbox_pred.weight' has shape (4, 1024) in the checkpoint but (5, 1024) in the model! Skipped.
+'roi_heads.box_predictor.1.bbox_pred.bias' has shape (4,) in the checkpoint but (5,) in the model! Skipped.
+'roi_heads.box_predictor.2.cls_score.weight' has shape (81, 1024) in the checkpoint but (5, 1024) in the model! Skipped.
+'roi_heads.box_predictor.2.cls_score.bias' has shape (81,) in the checkpoint but (5,) in the model! Skipped.
+'roi_heads.box_predictor.2.bbox_pred.weight' has shape (4, 1024) in the checkpoint but (5, 1024) in the model! Skipped.
+'roi_heads.box_predictor.2.bbox_pred.bias' has shape (4,) in the checkpoint but (5,) in the model! Skipped.
+[32m[03/13 17:53:12 d2.engine.train_loop]: [0mStarting training from iteration 0
+[32m[03/13 17:54:35 d2.utils.events]: [0m eta: 59 days, 19:03:16  iter: 19  total_loss: 5.089  loss_cls_stage0: 1.353  loss_box_reg_stage0: 0.000  loss_cls_stage1: 1.401  loss_box_reg_stage1: 0.000  loss_cls_stage2: 1.505  loss_box_reg_stage2: 0.001  loss_rpn_cls: 0.693  loss_rpn_loc: 0.102  time: 4.0602  data_time: 0.0291  lr: 0.000125  max_mem: 18535M
+[32m[03/13 17:55:59 d2.utils.events]: [0m eta: 62 days, 3:43:31  iter: 39  total_loss: 1.290  loss_cls_stage0: 0.138  loss_box_reg_stage0: 0.000  loss_cls_stage1: 0.189  loss_box_reg_stage1: 0.000  loss_cls_stage2: 0.235  loss_box_reg_stage2: 0.000  loss_rpn_cls: 0.675  loss_rpn_loc: 0.069  time: 4.1481  data_time: 0.0107  lr: 0.000250  max_mem: 18536M
+[32m[03/13 17:57:24 d2.utils.events]: [0m eta: 63 days, 23:19:37  iter: 59  total_loss: 0.886  loss_cls_stage0: 0.037  loss_box_reg_stage0: 0.000  loss_cls_stage1: 0.047  loss_box_reg_stage1: 0.000  loss_cls_stage2: 0.050  loss_box_reg_stage2: 0.001  loss_rpn_cls: 0.640  loss_rpn_loc: 0.108  time: 4.1849  data_time: 0.0120  lr: 0.000375  max_mem: 18536M
+[32m[03/13 17:58:50 d2.utils.events]: [0m eta: 64 days, 6:47:23  iter: 79  total_loss: 0.732  loss_cls_stage0: 0.028  loss_box_reg_stage0: 0.003  loss_cls_stage1: 0.035  loss_box_reg_stage1: 0.000  loss_cls_stage2: 0.037  loss_box_reg_stage2: 0.000  loss_rpn_cls: 0.561  loss_rpn_loc: 0.064  time: 4.2148  data_time: 0.0105  lr: 0.000500  max_mem: 18536M
+[32m[03/13 18:00:18 d2.utils.events]: [0m eta: 64 days, 7:12:18  iter: 99  total_loss: 0.829  loss_cls_stage0: 0.068  loss_box_reg_stage0: 0.082  loss_cls_stage1: 0.050  loss_box_reg_stage1: 0.030  loss_cls_stage2: 0.051  loss_box_reg_stage2: 0.001  loss_rpn_cls: 0.448  loss_rpn_loc: 0.086  time: 4.2447  data_time: 0.0122  lr: 0.000624  max_mem: 18536M
+[32m[03/13 18:01:47 d2.utils.events]: [0m eta: 64 days, 7:22:17  iter: 119  total_loss: 0.974  loss_cls_stage0: 0.098  loss_box_reg_stage0: 0.245  loss_cls_stage1: 0.055  loss_box_reg_stage1: 0.094  loss_cls_stage2: 0.047  loss_box_reg_stage2: 0.020  loss_rpn_cls: 0.257  loss_rpn_loc: 0.130  time: 4.2801  data_time: 0.0119  lr: 0.000749  max_mem: 18536M
+[32m[03/13 18:03:16 d2.utils.events]: [0m eta: 64 days, 9:06:00  iter: 139  total_loss: 1.189  loss_cls_stage0: 0.140  loss_box_reg_stage0: 0.418  loss_cls_stage1: 0.060  loss_box_reg_stage1: 0.162  loss_cls_stage2: 0.044  loss_box_reg_stage2: 0.033  loss_rpn_cls: 0.135  loss_rpn_loc: 0.141  time: 4.3057  data_time: 0.0115  lr: 0.000874  max_mem: 18536M
+[32m[03/13 18:04:45 d2.utils.events]: [0m eta: 64 days, 10:16:38  iter: 159  total_loss: 1.026  loss_cls_stage0: 0.141  loss_box_reg_stage0: 0.388  loss_cls_stage1: 0.068  loss_box_reg_stage1: 0.179  loss_cls_stage2: 0.042  loss_box_reg_stage2: 0.036  loss_rpn_cls: 0.091  loss_rpn_loc: 0.088  time: 4.3245  data_time: 0.0126  lr: 0.000999  max_mem: 18536M
+[32m[03/13 18:06:17 d2.utils.events]: [0m eta: 65 days, 0:23:47  iter: 179  total_loss: 1.595  loss_cls_stage0: 0.179  loss_box_reg_stage0: 0.541  loss_cls_stage1: 0.079  loss_box_reg_stage1: 0.313  loss_cls_stage2: 0.045  loss_box_reg_stage2: 0.054  loss_rpn_cls: 0.095  loss_rpn_loc: 0.134  time: 4.3540  data_time: 0.0119  lr: 0.001124  max_mem: 18536M
+[32m[03/13 18:07:48 d2.utils.events]: [0m eta: 65 days, 5:24:10  iter: 199  total_loss: 1.636  loss_cls_stage0: 0.197  loss_box_reg_stage0: 0.680  loss_cls_stage1: 0.086  loss_box_reg_stage1: 0.331  loss_cls_stage2: 0.042  loss_box_reg_stage2: 0.082  loss_rpn_cls: 0.079  loss_rpn_loc: 0.090  time: 4.3761  data_time: 0.0133  lr: 0.001249  max_mem: 18536M
+[32m[03/13 18:09:19 d2.utils.events]: [0m eta: 65 days, 10:45:32  iter: 219  total_loss: 2.000  loss_cls_stage0: 0.187  loss_box_reg_stage0: 0.848  loss_cls_stage1: 0.090  loss_box_reg_stage1: 0.442  loss_cls_stage2: 0.043  loss_box_reg_stage2: 0.147  loss_rpn_cls: 0.074  loss_rpn_loc: 0.072  time: 4.3914  data_time: 0.0115  lr: 0.001374  max_mem: 18536M
+[32m[03/13 18:10:49 d2.utils.events]: [0m eta: 65 days, 11:52:39  iter: 239  total_loss: 1.254  loss_cls_stage0: 0.140  loss_box_reg_stage0: 0.518  loss_cls_stage1: 0.093  loss_box_reg_stage1: 0.194  loss_cls_stage2: 0.041  loss_box_reg_stage2: 0.063  loss_rpn_cls: 0.057  loss_rpn_loc: 0.089  time: 4.4012  data_time: 0.0122  lr: 0.001499  max_mem: 18536M
+[32m[03/13 18:12:20 d2.utils.events]: [0m eta: 65 days, 16:41:08  iter: 259  total_loss: 1.237  loss_cls_stage0: 0.189  loss_box_reg_stage0: 0.620  loss_cls_stage1: 0.068  loss_box_reg_stage1: 0.261  loss_cls_stage2: 0.023  loss_box_reg_stage2: 0.068  loss_rpn_cls: 0.067  loss_rpn_loc: 0.097  time: 4.4122  data_time: 0.0112  lr: 0.001623  max_mem: 18536M
+[32m[03/13 18:13:48 d2.utils.events]: [0m eta: 65 days, 16:39:40  iter: 279  total_loss: 1.567  loss_cls_stage0: 0.155  loss_box_reg_stage0: 0.735  loss_cls_stage1: 0.067  loss_box_reg_stage1: 0.311  loss_cls_stage2: 0.026  loss_box_reg_stage2: 0.107  loss_rpn_cls: 0.044  loss_rpn_loc: 0.093  time: 4.4103  data_time: 0.0108  lr: 0.001748  max_mem: 18536M
+[32m[03/13 18:15:19 d2.utils.events]: [0m eta: 65 days, 19:33:38  iter: 299  total_loss: 1.340  loss_cls_stage0: 0.165  loss_box_reg_stage0: 0.697  loss_cls_stage1: 0.055  loss_box_reg_stage1: 0.269  loss_cls_stage2: 0.020  loss_box_reg_stage2: 0.080  loss_rpn_cls: 0.049  loss_rpn_loc: 0.063  time: 4.4183  data_time: 0.0104  lr: 0.001873  max_mem: 18536M

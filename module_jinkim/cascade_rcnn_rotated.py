@@ -173,9 +173,9 @@ for d in ["train", "val"]:
 ClassCount = 4
 input_image_scale = 750 # ADD dataset crop 안했을 때 image scale
 cropped_image_size = 750  # 이 코드에서 인풋이미지의 사이즈는 이것으로 결정된다. # 800 cropping later(for batch size problem)..
-num_of_training_imgs = 19610 # ADD data augmentation 하고 난 대략적인 트레이닝 이미지 개
-imgs_per_batch = 4 # 이 코드에서 쓰일 batch size
-iter_per_epoch = int(num_of_training_imgs/imgs_per_batch)
+num_of_training_imgs = 9805 # ADD data augmentation 하고 난 대략적인 트레이닝 이미지 개
+imgs_per_batch = 5 # 이 코드에서 쓰일 batch size
+iter_per_epoch = 600
 iter_alpha = 0 # 추가적으로 iteration 돌리고 싶을 때 이 값을 추가한다.(전체 iteration과 lr이 감소하는 타이밍이 linear하게 늘어남.)
 resume_training = False # Decide whether to continue training.
 epoch_per_savemodel = 1 # saving per epoch
@@ -193,7 +193,7 @@ else:
 cfg.DATASETS.TRAIN = (['ADDxywht_train'])
 cfg.DATASETS.TEST = (['ADDxywht_val'])
 # Maximum size of the side of the image during training
-cfg.INPUT.MAX_SIZE_TRAIN = cropped_image_size + 150
+cfg.INPUT.MAX_SIZE_TRAIN = cropped_image_size + 50 
 # Size of the smallest side of the image during training
 cfg.INPUT.MIN_SIZE_TRAIN = (cropped_image_size - 150,cropped_image_size + 50)
 # Size of the smallest side of the image during testing. Set to zero to disable resize in testing.
