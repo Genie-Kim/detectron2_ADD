@@ -63,7 +63,7 @@ def seperate_train_val(train_val_ratio, origin_ADD_csv, train_csv_path, val_csv_
 
     val_df = pd.DataFrame()
     train_df = pd.DataFrame()
-    for i in range(img_num):
+    for i in tqdm(range(img_num),desc='seperate validation & training set'):
         img_name = img_names.iloc[i]
         data_per_img = df[df['file_name'] == img_name]
         k = random.uniform(0, 1)  # 0에서 1사이
@@ -79,7 +79,7 @@ def get_ADDxywht_dicts(dataset_dir, val_or_train):
     csv_file = os.path.join(dataset_dir, "ADD_" + val_or_train + ".csv")
     img_dir = os.path.join(dataset_dir, 'images')
     df = pd.read_csv(csv_file)
-    image_shape = input_image_scale
+    # image_shape = input_image_scale
 
     # XYWHA 데이터 생성하기
     xywha = backward_convert(df.loc[:, 'point1_x':'point4_y'].values)
@@ -100,8 +100,11 @@ def get_ADDxywht_dicts(dataset_dir, val_or_train):
     for i in tqdm(range(df.shape[0]),desc='get ADD '+val_or_train + " dataset upload"):
         filename = os.path.join(img_dir, df.loc[i, 'file_name'])
         # height, width = cv2.imread(filename).shape[:2]
-        height = image_shape
-        width = image_shape
+        # height = image_shape
+        # width = image_shape
+        height = int(df.loc[i,'image_shape'])
+        width = height
+
         if filename not in file_name_dict:
             file_name_dict[filename] = dict.fromkeys(["image_id", "height", "width", "annotations"])
             image_id = len(file_name_dict)
@@ -139,7 +142,8 @@ train_csv_path = os.path.join(dataset_dir, 'ADD_train.csv')
 val_csv_path = os.path.join(dataset_dir, 'ADD_val.csv')
 
 ## divide ADD label csv to train & validation and save label
-seperate_train_val(0.18, origin_ADD_csv, train_csv_path, val_csv_path)
+# if not(os.path.isfile(train_csv_path) and os.path.isfile(val_csv_path)):
+seperate_train_val(0.05, origin_ADD_csv, train_csv_path, val_csv_path)
 
 for d in ["train", "val"]:
     DatasetCatalog.register("ADDxywht_" + d, lambda d=d: get_ADDxywht_dicts(dataset_dir, d))
@@ -171,13 +175,13 @@ for d in ["train", "val"]:
 
 ############################## config file setting #################################################
 ClassCount = 4
-input_image_scale = 750 # ADD dataset crop 안했을 때 image scale
+# input_image_scale = 1250 # ADD dataset crop 안했을 때 image scale
 cropped_image_size = 750  # 이 코드에서 인풋이미지의 사이즈는 이것으로 결정된다. # 800 cropping later(for batch size problem)..
 num_of_training_imgs = 9805 # ADD data augmentation 하고 난 대략적인 트레이닝 이미지 개
-imgs_per_batch = 5 # 이 코드에서 쓰일 batch size
-iter_per_epoch = 600
+imgs_per_batch = 4 # 이 코드에서 쓰일 batch size
+iter_per_epoch = 750
 iter_alpha = 0 # 추가적으로 iteration 돌리고 싶을 때 이 값을 추가한다.(전체 iteration과 lr이 감소하는 타이밍이 linear하게 늘어남.)
-resume_training = False # Decide whether to continue training.
+resume_training = True # Decide whether to continue training.
 epoch_per_savemodel = 1 # saving per epoch
 
 cfg = get_cfg()
@@ -186,16 +190,16 @@ configfile = "Misc/cascade_mask_rcnn_X_152_32x8d_FPN_IN5k_gn_dconv.yaml"
 cfg.merge_from_file(model_zoo.get_config_file(configfile))
 
 if resume_training: # Resume
-    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")  # Resume
+    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_0071249.pth")  # Resume
 else:
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(configfile)  # Let training initialize from model zoo
 
 cfg.DATASETS.TRAIN = (['ADDxywht_train'])
 cfg.DATASETS.TEST = (['ADDxywht_val'])
 # Maximum size of the side of the image during training
-cfg.INPUT.MAX_SIZE_TRAIN = cropped_image_size + 50 
+cfg.INPUT.MAX_SIZE_TRAIN = cropped_image_size 
 # Size of the smallest side of the image during training
-cfg.INPUT.MIN_SIZE_TRAIN = (cropped_image_size - 150,cropped_image_size + 50)
+cfg.INPUT.MIN_SIZE_TRAIN = (cropped_image_size - 150,cropped_image_size)
 # Size of the smallest side of the image during testing. Set to zero to disable resize in testing.
 cfg.INPUT.MIN_SIZE_TEST = cropped_image_size
 # Maximum size of the side of the image during testing
