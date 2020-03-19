@@ -199,7 +199,7 @@ def get_ADDtest_dicts(test_dataset_dir,crop_size):
 ClassCount = 4
 # input_image_scale = 550 # ADD dataset crop 안했을 때 image scale
 image_resize_size = 750  # 이 코드에서 maximum 인풋이미지의 사이즈는 이것으로 결정된다.
-model_to_resume = 'cascade_model_0002999.pth'
+model_to_resume = 'model_0011249.pth'
 
 cfg = get_cfg()
 cfg.OUTPUT_DIR = './module_jinkim/output'
@@ -256,11 +256,12 @@ print(cfg)
 ########### dataset setting part ###########
 from detectron2.data import DatasetCatalog, MetadataCatalog
 
+train_inference_file_name = "ADDxywht_train650"
 cropped_dataset_dir = os.path.expanduser('~/hddu/ADD_all_original_data/')  # symbolik link를 유저 path 바로 밑에 설치.(ex :sudo ln -sT ~/hddu/dataset_ADD_20191122/ ~/ADD_dataset)
 train_dataset_dir = '/home/genie/hddu/ADD_all_original_data/ADD_12merged_original/'
 
-DatasetCatalog.register("ADDxywht_train", lambda d=1: get_ADDxywht_traindicts(train_dataset_dir))
-MetadataCatalog.get("ADDxywht_train").set(thing_classes=['container', 'oil tanker', 'aircraft carrier', 'maritime vessels'])
+DatasetCatalog.register(train_inference_file_name, lambda d=1: get_ADDxywht_traindicts(train_dataset_dir))
+MetadataCatalog.get(train_inference_file_name).set(thing_classes=['container', 'oil tanker', 'aircraft carrier', 'maritime vessels'])
 
 for crop_size in [550,650,750,850,950,1050,1150,1250,1350,1450,1550]:
     DatasetCatalog.register("ADDxywht_test_"+str(crop_size), lambda crop_size=crop_size: get_ADDtest_dicts(cropped_dataset_dir,crop_size))
@@ -287,10 +288,10 @@ class MyTrainer(DefaultTrainer):
 from detectron2.engine import DefaultPredictor
 from detectron2.utils.visualizer import Visualizer
 
-cropsize_to_infer = [750]
+cropsize_to_infer = [650]
 crop_namimg = '_'.join([str(x) for x in cropsize_to_infer])
 predictor = DefaultPredictor(cfg)
-write_csv_path = os.path.join(cfg.OUTPUT_DIR,'ADD_crop_test_result_'+crop_namimg+'_'+os.path.splitext(model_to_resume)[0]+'.csv')
+write_csv_path = os.path.join(cfg.OUTPUT_DIR,'ADD_crop_exp_result_'+crop_namimg+'_'+os.path.splitext(model_to_resume)[0]+'.csv')
 all_classes = ['container', 'oil tanker', 'aircraft carrier', 'maritime vessels']
 
 pred_alltest=[]
@@ -299,8 +300,8 @@ infer_datasets = {}
 for crop_size in cropsize_to_infer:
     infer_datasets[crop_size] = get_ADDtest_dicts(cropped_dataset_dir,crop_size)
 
-data_loader = MyTrainer.build_test_loader(cfg, 'ADDxywht_train')
-evaluator = MyTrainer.build_evaluator(cfg, 'ADDxywht_train')
+data_loader = MyTrainer.build_test_loader(cfg, train_inference_file_name)
+evaluator = MyTrainer.build_evaluator(cfg, train_inference_file_name)
 evaluator.reset()
 
 
@@ -404,7 +405,7 @@ print_csv_format(results)
 temp_df = pd.DataFrame(data= np.asarray(pred_alltest), columns = np.array(['file_name','class_id','confidence', 'point1_x', 'point1_y', 'point2_x', 'point2_y','point3_x', 'point3_y', 'point4_x', 'point4_y']))
 temp_df.to_csv(write_csv_path, mode='w', index=False)
 filename_wts = '0.png'
-draw_gts_onimage_save(temp_df,filename_wts,os.path.join(train_dataset_dir,'images'),os.path.join(cfg.OUTPUT_DIR,'draw_pred_'+filename_wts))
+draw_gts_onimage_save(temp_df,filename_wts,os.path.join(train_dataset_dir,'images'),os.path.join(cfg.OUTPUT_DIR,'draw_pred_cropexp_'+crop_namimg+filename_wts))
 
 
 
