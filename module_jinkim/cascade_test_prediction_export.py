@@ -105,8 +105,8 @@ ADDxywht_metadata = MetadataCatalog.get("ADDxywht_test")
 ############################## config file setting #################################################
 ClassCount = 4
 input_image_scale = 3000 # ADD dataset crop 안했을 때 image scale
-image_resize_size = 1250  # 이 코드에서 maximum 인풋이미지의 사이즈는 이것으로 결정된다.
-model_to_resume = 'model_0040299.pth'
+image_resize_size = 2000  # 이 코드에서 maximum 인풋이미지의 사이즈는 이것으로 결정된다.
+model_to_resume = 'cascade_model_0064499.pth'
 
 cfg = get_cfg()
 cfg.OUTPUT_DIR = './module_jinkim/output'
@@ -120,7 +120,7 @@ cfg.INPUT.MIN_SIZE_TEST = image_resize_size
 # Maximum size of the side of the image during testing
 cfg.INPUT.MAX_SIZE_TEST = image_resize_size
 
-cfg.DATALOADER.NUM_WORKERS = 1
+cfg.DATALOADER.NUM_WORKERS = 4
 
 cfg.MODEL.MASK_ON = False
 cfg.MODEL.ROI_HEADS.NAME = "CascadeRROIHeads" # cascade roi heads가 rroi heads를 상속받아서 구현된 것.
