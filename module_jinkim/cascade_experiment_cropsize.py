@@ -23,7 +23,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from detectron2.structures import BoxMode
-
+torch.cuda.empty_cache()
 pd.set_option('display.max_columns', 30)
 def backward_convert(coordinate, with_label=False):
     """
@@ -256,7 +256,7 @@ print(cfg)
 ########### dataset setting part ###########
 from detectron2.data import DatasetCatalog, MetadataCatalog
 
-train_inference_file_name = "ADDxywht_train650"
+train_inference_file_name = "ADDxywht_train950" ## should change
 cropped_dataset_dir = os.path.expanduser('~/hddu/ADD_all_original_data/')  # symbolik link를 유저 path 바로 밑에 설치.(ex :sudo ln -sT ~/hddu/dataset_ADD_20191122/ ~/ADD_dataset)
 train_dataset_dir = '/home/genie/hddu/ADD_all_original_data/ADD_12merged_original/'
 
@@ -288,7 +288,7 @@ class MyTrainer(DefaultTrainer):
 from detectron2.engine import DefaultPredictor
 from detectron2.utils.visualizer import Visualizer
 
-cropsize_to_infer = [650]
+cropsize_to_infer = [950] ## should change
 crop_namimg = '_'.join([str(x) for x in cropsize_to_infer])
 predictor = DefaultPredictor(cfg)
 write_csv_path = os.path.join(cfg.OUTPUT_DIR,'ADD_crop_exp_result_'+crop_namimg+'_'+os.path.splitext(model_to_resume)[0]+'.csv')

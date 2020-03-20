@@ -267,7 +267,7 @@ class MyTrainer(DefaultTrainer):
 from detectron2.engine import DefaultPredictor
 from detectron2.utils.visualizer import Visualizer
 
-cropsize_to_infer = [1550]
+cropsize_to_infer = [750,1250]
 crop_namimg = '_'.join([str(x) for x in cropsize_to_infer])
 predictor = DefaultPredictor(cfg)
 write_csv_path = os.path.join(cfg.OUTPUT_DIR,'ADD_crop_test_result_'+crop_namimg+'_'+os.path.splitext(model_to_resume)[0]+'.csv')
