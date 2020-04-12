@@ -179,14 +179,14 @@ def get_ADDtest_dicts(test_dataset_dir,crop_size):
 ClassCount = 4
 # input_image_scale = 550 # ADD dataset crop 안했을 때 image scale
 image_resize_size = 750  # 이 코드에서 maximum 인풋이미지의 사이즈는 이것으로 결정된다.
-model_to_resume = 'cascade_model_0009749.pth'
+model_to_resume = 'final_cascade_model_0007499.pth'
 
 cfg = get_cfg()
 cfg.OUTPUT_DIR = './module_jinkim/output'
 configfile = "Misc/cascade_mask_rcnn_X_152_32x8d_FPN_IN5k_gn_dconv.yaml"
 cfg.merge_from_file(model_zoo.get_config_file(configfile))
-cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, model_to_resume)
 
+cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, model_to_resume)
 cfg.DATASETS.TEST =  (['ADDxywht_test']) # 상관 없음.
 # Size of the smallest side of the image during testing. Set to zero to disable resize in testing.
 cfg.INPUT.MIN_SIZE_TEST = image_resize_size
@@ -242,7 +242,7 @@ test_dir = cropped_dataset_dir
 DatasetCatalog.register("ADDxywht_train", lambda d=1: get_ADD_original_test_dicts(test_dir))
 MetadataCatalog.get("ADDxywht_train").set(thing_classes=['container', 'oil tanker', 'aircraft carrier', 'maritime vessels'])
 
-for crop_size in [550,650,750,850,950,1050,1150,1250,1350,1450,1550]:
+for crop_size in [550,750,1050,1250,1550]:
     DatasetCatalog.register("ADDxywht_test_"+str(crop_size), lambda crop_size=crop_size: get_ADDtest_dicts(cropped_dataset_dir,crop_size))
     MetadataCatalog.get("ADDxywht_test_"+str(crop_size)).set(thing_classes=['container', 'oil tanker', 'aircraft carrier', 'maritime vessels'])
 
@@ -267,7 +267,7 @@ class MyTrainer(DefaultTrainer):
 from detectron2.engine import DefaultPredictor
 from detectron2.utils.visualizer import Visualizer
 
-cropsize_to_infer = [750,1250]
+cropsize_to_infer = [550,750,1050,1250,1550]
 crop_namimg = '_'.join([str(x) for x in cropsize_to_infer])
 predictor = DefaultPredictor(cfg)
 write_csv_path = os.path.join(cfg.OUTPUT_DIR,'ADD_crop_test_result_'+crop_namimg+'_'+os.path.splitext(model_to_resume)[0]+'.csv')
@@ -362,7 +362,7 @@ for one_image in tqdm(test_data_dict,desc='test set images evaluating'):
 
 temp_df = pd.DataFrame(data= np.asarray(pred_alltest), columns = np.array(['file_name','class_id','confidence', 'point1_x', 'point1_y', 'point2_x', 'point2_y','point3_x', 'point3_y', 'point4_x', 'point4_y']))
 temp_df.to_csv(write_csv_path, mode='w', index=False)
-filename_wts = '0.png'
+filename_wts = '11.png'
 draw_gts_onimage_save(temp_df,filename_wts,os.path.join(test_dir,'images'),os.path.join(cfg.OUTPUT_DIR,'draw_pred_'+filename_wts))
 
 
